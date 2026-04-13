@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<nav th:fragment="top-nav" class="minimal-nav">
+    <div class="nav-container">
+        <a href="/" class="nav-brand">
+            <i class="fas fa-robot"></i>
+            <h1 th:text="${appName ?: 'AI Todo'}">AI Todo + 拖延症治疗器</h1>
+        </a>
+        <ul class="nav-links">
+            <li><a href="/"><i class="fas fa-home"></i> 首页</a></li>
+            <li><a href="/tasks"><i class="fas fa-tasks"></i> 任务管理</a></li>
+            <li><a href="/ai-warnings"><i class="fas fa-bell"></i> AI提醒</a></li>
+            <li><a href="/health"><i class="fas fa-heartbeat"></i> 健康检查</a></li>
+
+            <li th:if="${loggedIn}">
+                <a href="#" style="color: var(--primary); display: flex; align-items: center; gap: 5px;">
+                    <img th:if="${avatarUrl != null}" th:src="${avatarUrl}" alt="头像" width="24" height="24" style="border-radius: 50%; object-fit: cover;">
+                    <i th:unless="${avatarUrl != null}" class="fas fa-user"></i>
+
+                    <span th:text="${username}"></span>
+                </a>
+            </li>
+            <li th:if="${loggedIn}">
+                <a href="/user/logout"><i class="fas fa-sign-out-alt"></i> 退出</a>
+            </li>
+            <li th:unless="${loggedIn}">
+                <a href="/login"><i class="fas fa-sign-in-alt"></i> 登录</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+</body>
+</html>

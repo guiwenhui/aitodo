@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Todo + 拖延症治疗器 (最小示例)</title>
+    <!-- Vue 3 CDN -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- Axios CDN (虽然只用假数据，但按要求引入) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.0/axios.min.js"></script>
+    <style>
+        /* 基础样式 - 总共约40行 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 0.95em;
+        }
+
+        /* 表单样式 */
+        .add-task-form {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            margin-bottom: 25px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: #2980b9;
+        }
+
+        /* 任务列表样式 */
+        .task-list {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+
+        .task-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .task-item:last-child {
+            border-bottom: none;
+        }
+
+        /* 任务状态颜色类 */
+        .status-normal { border-left: 4px solid #3498db; }      /* 蓝色 - 正常 */
+        .status-urgent { border-left: 4px solid #f39c12; }     /* 橙色 - 紧急 */
+        .status-delayed { border-left: 4px solid #e74c3c; }    /* 红色 - 拖延 */
+        .status-completed { border-left: 4px solid #2ecc71; }  /* 绿色 - 已完成 */
+
+        .task-info {
+            flex: 1;
+        }
+
+        .task-title {
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+
+        .task-status {
+            font-size: 0.85em;
+            color: #7f8c8d;
+        }
+
+        .task-actions button {
+            padding: 6px 12px;
+            font-size: 14px;
+            margin-left: 8px;
+        }
+
+        .btn-complete {
+            background: #2ecc71;
+        }
+
+        .btn-complete:hover {
+            background: #27ae60;
+        }
+
+        .btn-delete {
+            background: #e74c3c;
+        }
+
+        .btn-delete:hover {
+            background: #c0392b;
+        }
+
+        /* AI提醒区域 */
+        .ai-warning {
+            margin-top: 25px;
+            padding: 20px;
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            border-radius: 4px;
+        }
+
+        .ai-warning h3 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .ai-text {
+            color: #856404;
+        }
+
+        /* 空状态提示 */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- 头部 -->
+        <header>
+            <h1>AI Todo + 拖延症治疗器</h1>
+            <p class="subtitle">最小前端示例 - 使用Vue3 + 假数据</p>
+        </header>
+
+        <!-- 添加任务表单 -->
+        <div class="add-task-form">
+            <h2>添加新任务</h2>
+            <div class="input-group">
+                <input
+                    type="text"
+                    v-model="newTaskTitle"
+                    placeholder="输入任务标题，例如：完成项目报告"
+                    @keyup.enter="addTask"
+                >
+                <button @click="addTask">添加任务</button>
+            </div>
+        </div>
+
+        <!-- 任务列表 -->
+        <div class="task-list">
+            <h2 style="padding: 20px 20px 0;">任务列表 ({{ tasks.length }})</h2>
+
+            <!-- 空状态 -->
+            <div v-if="tasks.length === 0" class="empty-state">
+                <p>📭 还没有任务，添加一个开始吧！</p>
+            </div>
+
+            <!-- 任务项 -->
+            <div
+                v-for="task in tasks"
+                :key="task.id"
+                class="task-item"
+                :class="getStatusClass(task)"
+            >
+                <div class="task-info">
+                    <div class="task-title">{{ task.title }}</div>
+                    <div class="task-status">
+                        状态: {{ getStatusText(task) }} |
+                        创建时间: {{ formatTime(task.createdAt) }}
+                        <span v-if="task.deadline"> | 截止: {{ formatTime(task.deadline) }}</span>
+                    </div>
+                </div>
+
+                <div class="task-actions">
+                    <button
+                        v-if="task.status !== 'completed'"
+                        @click="completeTask(task.id)"
+                        class="btn-complete"
+                    >
+                        完成
+                    </button>
+                    <button @click="deleteTask(task.id)" class="btn-delete">删除</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI提醒区域 -->
+        <div class="ai-warning">
+            <h3>🤖 AI 提醒 (模拟)</h3>
+            <p class="ai-text">{{ aiWarningText }}</p>
+            <p style="margin-top: 10px; font-size: 0.9em; color: #666;">
+                <small>提示：这是模拟的AI提醒，真实版本会基于任务状态智能生成</small>
+            </p>
+        </div>
+
+        <!-- 调试信息（开发时显示） -->
+        <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 4px; font-size: 0.85em; color: #666;">
+            <small>
+                <strong>技术栈：</strong> Vue 3 + Axios CDN |
+                <strong>数据：</strong> 本地模拟 |
+                <strong>状态：</strong> {{ getStatusSummary() }}
+            </small>
+        </div>
+    </div>
+
+    <script>
+        // Vue 3 应用 - 使用Options API保持简单
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    // 新任务标题
+                    newTaskTitle: '',
+
+                    // 任务列表假数据
+                    tasks: [
+                        {
+                            id: 1,
+                            title: '完成项目文档',
+                            status: 'normal', // normal, urgent, delayed, completed
+                            createdAt: new Date('2026-03-28T10:00:00'),
+                            deadline: new Date('2026-04-02T18:00:00')
+                        },
+                        {
+                            id: 2,
+                            title: '学习Vue3框架',
+                            status: 'urgent',
+                            createdAt: new Date('2026-03-29T14:30:00'),
+                            deadline: new Date('2026-03-31T23:59:59') // 今天截止
+                        },
+                        {
+                            id: 3,
+                            title: '晨跑锻炼',
+                            status: 'completed',
+                            createdAt: new Date('2026-03-30T07:00:00'),
+                            deadline: new Date('2026-03-30T08:00:00')
+                        },
+                        {
+                            id: 4,
+                            title: '整理书桌',
+                            status: 'delayed',
+                            createdAt: new Date('2026-03-25T09:00:00'),
+                            deadline: new Date('2026-03-27T17:00:00') // 已过期
+                        }
+                    ],
+
+                    // 下一个任务ID
+                    nextId: 5,
+
+                    // 模拟的AI提醒文本
+                    aiWarningText: '⏰ 你有1个紧急任务需要立即处理！拖延只会让问题变大，现在就开始行动吧！'
+                }
+            },
+
+            methods: {
+                // 添加新任务
+                addTask() {
+                    if (!this.newTaskTitle.trim()) {
+                        alert('请输入任务标题');
+                        return;
+                    }
+
+                    // 创建新任务对象
+                    const newTask = {
+                        id: this.nextId++,
+                        title: this.newTaskTitle.trim(),
+                        status: 'normal', // 默认正常状态
+                        createdAt: new Date(),
+                        // 默认设置3天后截止
+                        deadline: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)
+                    };
+
+                    this.tasks.push(newTask);
+                    this.newTaskTitle = '';
+
+                    // 更新AI提醒文本
+                    this.updateAiWarning();
+                },
+
+                // 标记任务为完成
+                completeTask(taskId) {
+                    const task = this.tasks.find(t => t.id === taskId);
+                    if (task) {
+                        task.status = 'completed';
+                        this.updateAiWarning();
+                    }
+                },
+
+                // 删除任务
+                deleteTask(taskId) {
+                    this.tasks = this.tasks.filter(t => t.id !== taskId);
+                    this.updateAiWarning();
+                },
+
+                // 根据任务状态获取CSS类名
+                getStatusClass(task) {
+                    return `status-${task.status}`;
+                },
+
+                // 获取状态文本
+                getStatusText(task) {
+                    const statusMap = {
+                        'normal': '正常',
+                        'urgent': '紧急',
+                        'delayed': '拖延',
+                        'completed': '已完成'
+                    };
+                    return statusMap[task.status] || '未知';
+                },
+
+                // 格式化时间显示
+                formatTime(date) {
+                    if (!(date instanceof Date)) {
+                        date = new Date(date);
+                    }
+                    return date.toLocaleDateString('zh-CN') + ' ' + date.toLocaleTimeString('zh-CN', {hour: '2-digit', minute: '2-digit'});
+                },
+
+                // 更新AI提醒文本（模拟）
+                updateAiWarning() {
+                    const urgentCount = this.tasks.filter(t => t.status === 'urgent').length;
+                    const delayedCount = this.tasks.filter(t => t.status === 'delayed').length;
+                    const completedCount = this.tasks.filter(t => t.status === 'completed').length;
+
+                    if (urgentCount > 0) {
+                        this.aiWarningText = `🚨 紧急提醒！你有 ${urgentCount} 个任务需要立即处理，拖延只会增加压力！`;
+                    } else if (delayedCount > 0) {
+                        this.aiWarningText = `🐌 注意！你有 ${delayedCount} 个任务已延迟，建议尽快处理避免堆积。`;
+                    } else if (completedCount === this.tasks.length) {
+                        this.aiWarningText = '🎉 太棒了！所有任务都已完成，继续保持高效工作！';
+                    } else {
+                        this.aiWarningText = '📊 进度良好！继续按照计划推进任务，保持节奏。';
+                    }
+                },
+
+                // 获取状态摘要
+                getStatusSummary() {
+                    const counts = {
+                        normal: this.tasks.filter(t => t.status === 'normal').length,
+                        urgent: this.tasks.filter(t => t.status === 'urgent').length,
+                        delayed: this.tasks.filter(t => t.status === 'delayed').length,
+                        completed: this.tasks.filter(t => t.status === 'completed').length
+                    };
+                    return `正常:${counts.normal} 紧急:${counts.urgent} 拖延:${counts.delayed} 完成:${counts.completed}`;
+                }
+            },
+
+            // 生命周期钩子
+            mounted() {
+                console.log('AI Todo 前端示例已加载');
+                console.log('任务数据:', this.tasks);
+
+                // 模拟Axios调用（虽然用假数据，但展示如何使用）
+                // axios.get('/api/tasks').then(response => {
+                //     this.tasks = response.data;
+                // }).catch(error => {
+                //     console.error('获取任务失败:', error);
+                // });
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

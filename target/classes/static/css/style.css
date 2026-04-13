@@ -1,0 +1,13 @@
+/* Main Stylesheet for AI Todo */
+:root {
+    --primary: #4a6fa5;
+    --secondary: #66bb6a;
+    --bg-light: #f8f9fa;
+    --text-dark: #333;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Poppins', sans-serif;
+}

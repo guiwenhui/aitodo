@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Todo - 简约任务管理</title>
+    <!-- Vue 3 CDN -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- Axios CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.0/axios.min.js"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* 简约设计系统 */
+        :root {
+            --primary: #4f46e5;
+            --primary-light: #818cf8;
+            --primary-dark: #3730a3;
+            --secondary: #10b981;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --text-lighter: #9ca3af;
+            --bg: #ffffff;
+            --bg-light: #f9fafb;
+            --bg-lighter: #f3f4f6;
+            --border: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --radius: 0.75rem;
+            --transition: all 0.2s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* 简约导航 */
+        .minimal-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(8px);
+            z-index: 100;
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+
+        .nav-brand i {
+            color: var(--primary);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-light);
+            font-weight: 500;
+            transition: var(--transition);
+            padding: 0.5rem 0;
+            position: relative;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--primary);
+        }
+
+        .nav-links a.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--primary);
+            border-radius: 1px;
+        }
+
+        /* 英雄区域 */
+        .minimal-hero {
+            min-height: 90vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6rem 2rem 4rem;
+            background: linear-gradient(135deg, var(--bg-light) 0%, var(--bg) 100%);
+        }
+
+        .hero-content {
+            max-width: 800px;
+            text-align: center;
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-light);
+            margin-bottom: 3rem;
+            line-height: 1.7;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 4rem;
+        }
+
+        .btn {
+            padding: 0.875rem 2rem;
+            border-radius: var(--radius);
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-light);
+            border-color: var(--primary);
+        }
+
+        /* 统计卡片 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 2rem;
+            text-align: center;
+            border: 1px solid var(--border);
+            transition: var(--transition);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary-light);
+        }
+
+        .stat-icon {
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* 特性区域 */
+        .minimal-features {
+            padding: 6rem 2rem;
+            background: var(--bg-light);
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+
+        .section-subtitle {
+            text-align: center;
+            color: var(--text-light);
+            margin-bottom: 4rem;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 2.5rem 2rem;
+            text-align: center;
+            border: 1px solid var(--border);
+            transition: var(--transition);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--primary);
+        }
+
+        .feature-icon {
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+        }
+
+        .feature-icon i {
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .feature-card h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+
+        .feature-card p {
+            color: var(--text-light);
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        /* 任务预览 */
+        .task-preview {
+            padding: 6rem 2rem;
+            background: white;
+        }
+
+        .task-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--bg-light);
+            border-radius: var(--radius);
+            padding: 2.5rem;
+            border: 1px solid var(--border);
+        }
+
+        .task-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .task-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .task-refresh {
+            padding: 0.625rem 1.25rem;
+            background: white;
+            color: var(--primary);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .task-refresh:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .task-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem;
+            background: white;
+            border-radius: var(--radius);
+            border-left: 4px solid var(--primary);
+            transition: var(--transition);
+        }
+
+        .task-item:hover {
+            transform: translateX(4px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .task-item.completed {
+            border-left-color: var(--secondary);
+            opacity: 0.8;
+        }
+
+        .task-item.delayed {
+            border-left-color: #ef4444;
+        }
+
+        .task-item.urgent {
+            border-left-color: #f59e0b;
+        }
+
+        .task-info h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: var(--text);
+        }
+
+        .task-meta {
+            display: flex;
+            gap: 1rem;
+            color: var(--text-light);
+            font-size: 0.75rem;
+        }
+
+        .task-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-pending { background: #dbeafe; color: #1d4ed8; }
+        .status-completed { background: #d1fae5; color: #065f46; }
+        .status-delayed { background: #fee2e2; color: #991b1b; }
+        .status-urgent { background: #fef3c7; color: #92400e; }
+
+        /* 加载状态 */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-light);
+        }
+
+        .spinner {
+            border: 3px solid var(--border);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 页脚 */
+        .minimal-footer {
+            background: var(--bg-light);
+            padding: 4rem 2rem 2rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+
+        .footer-logo i {
+            color: var(--primary);
+        }
+
+        .footer-info p {
+            color: var(--text-light);
+            margin-bottom: 0.25rem;
+            font-size: 0.875rem;
+        }
+
+        .footer-copyright {
+            text-align: center;
+            width: 100%;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+            color: var(--text-lighter);
+            font-size: 0.75rem;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .minimal-nav {
+                padding: 1rem;
+            }
+
+            .nav-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-links {
+                gap: 1rem;
+            }
+
+            .hero-title {
+                font-size: 2.5rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1.125rem;
+            }
+
+            .hero-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn {
+                width: 100%;
+                max-width: 300px;
+                justify-content: center;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .task-header {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+
+            .task-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .footer-content {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-title {
+                font-size: 2rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1rem;
+            }
+
+            .section-title {
+                font-size: 2rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .task-meta {
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- 简约导航 -->
+        <nav class="minimal-nav">
+            <div class="nav-container">
+                <a href="/" class="nav-brand">
+                    <i class="fas fa-robot"></i>
+                    <span>{{ appName }}</span>
+                </a>
+                <ul class="nav-links">
+                    <li><a href="/" :class="{ active: currentPage === 'home' }" @click="setPage('home')">首页</a></li>
+                    <li><a href="/tasks" :class="{ active: currentPage === 'tasks' }" @click="setPage('tasks')">任务管理</a></li>
+                    <li><a href="/ai-warnings" :class="{ active: currentPage === 'warnings' }" @click="setPage('warnings')">AI提醒</a></li>
+                    <li><a href="/health" :class="{ active: currentPage === 'health' }" @click="setPage('health')">健康检查</a></li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- 英雄区域 -->
+        <section class="minimal-hero">
+            <div class="hero-content">
+                <h1 class="hero-title">专注当下，高效生活</h1>
+                <p class="hero-subtitle">
+                    AI 驱动的任务管理与拖延症分析系统，通过智能提醒和实时进度追踪，
+                    帮助您建立高效的工作习惯，提升生活质量。
+                </p>
+                <div class="hero-actions">
+                    <a href="/tasks" class="btn btn-primary">
+                        <i class="fas fa-plus-circle"></i>
+                        开始使用
+                    </a>
+                    <a href="/ai-warnings" class="btn btn-secondary">
+                        <i class="fas fa-bell"></i>
+                        查看提醒
+                    </a>
+                </div>
+
+                <!-- 实时统计 -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-tasks"></i>
+                        </div>
+                        <div class="stat-value">{{ stats.totalTasks || 0 }}</div>
+                        <div class="stat-label">总任务数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-value">{{ stats.completedTasks || 0 }}</div>
+                        <div class="stat-label">已完成</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-value">{{ stats.delayedTasks || 0 }}</div>
+                        <div class="stat-label">已延迟</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="stat-value">{{ stats.completionRate ? (stats.completionRate * 100).toFixed(1) + '%' : '0%' }}</div>
+                        <div class="stat-label">完成率</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 特性区域 -->
+        <section class="minimal-features">
+            <h2 class="section-title">核心特性</h2>
+            <p class="section-subtitle">
+                专为治疗拖延症设计的智能功能，结合心理学原理与AI技术
+            </p>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-tasks"></i>
+                    </div>
+                    <h3>智能任务管理</h3>
+                    <p>
+                        创建、编辑、删除任务，设置智能提醒和截止时间，
+                        支持多状态标记，轻松管理所有待办事项
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h3>AI拖延分析</h3>
+                    <p>
+                        基于任务完成情况和时间模式，AI智能分析拖延习惯，
+                        提供个性化改进建议和干预策略
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-pie"></i>
+                    </div>
+                    <h3>进度可视化</h3>
+                    <p>
+                        实时统计任务完成率，可视化展示拖延情况，
+                        通过图表直观了解工作效率变化趋势
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <h3>多风格提醒</h3>
+                    <p>
+                        幽默毒舌、紧急警告、温和鼓励等多种提醒风格，
+                        根据任务状态智能切换，提高提醒效果
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 任务预览 -->
+        <section class="task-preview">
+            <div class="task-container">
+                <div class="task-header">
+                    <h3 class="task-title">最近任务</h3>
+                    <button class="task-refresh" @click="loadTasks" :disabled="loadingTasks">
+                        <i class="fas fa-sync-alt" :class="{ 'fa-spin': loadingTasks }"></i>
+                        {{ loadingTasks ? '加载中...' : '刷新' }}
+                    </button>
+                </div>
+
+                <div v-if="loadingTasks" class="loading">
+                    <div class="spinner"></div>
+                    <p>正在加载任务数据...</p>
+                </div>
+
+                <div v-else-if="tasks.length === 0" class="loading">
+                    <p>📭 还没有任务数据</p>
+                    <p style="margin-top: 0.5rem; color: var(--text-light); font-size: 0.875rem;">
+                        点击上方"开始使用"按钮创建第一个任务
+                    </p>
+                </div>
+
+                <div v-else class="task-list">
+                    <div v-for="task in tasks.slice(0, 3)" :key="task.id"
+                         class="task-item"
+                         :class="getTaskStatusClass(task.status)">
+                        <div class="task-info">
+                            <h4>{{ task.title }}</h4>
+                            <div class="task-meta">
+                                <span>创建: {{ formatDate(task.createdAt) }}</span>
+                                <span v-if="task.deadline">截止: {{ formatDate(task.deadline) }}</span>
+                            </div>
+                        </div>
+                        <div class="task-status" :class="'status-' + getStatusText(task.status).toLowerCase()">
+                            {{ getStatusText(task.status) }}
+                        </div>
+                    </div>
+                </div>
+
+                <div v-if="tasks.length > 3" style="text-align: center; margin-top: 2rem;">
+                    <a href="/tasks" class="btn btn-secondary" style="padding: 0.75rem 1.5rem;">
+                        <i class="fas fa-external-link-alt"></i>
+                        查看全部任务 ({{ tasks.length }})
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- 页脚 -->
+        <footer class="minimal-footer">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <i class="fas fa-robot"></i>
+                    <span>{{ appName }}</span>
+                </div>
+                <div class="footer-info">
+                    <p>版本 {{ version }}</p>
+                    <p>用技术治愈拖延症，提升生活品质</p>
+                </div>
+            </div>
+            <div class="footer-copyright">
+                <p>© 2026 {{ appName }} - 保留所有权利</p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        const { createApp, ref, onMounted } = Vue;
+
+        createApp({
+            setup() {
+                // 应用数据
+                const appName = ref('AI Todo');
+                const version = ref('1.0.0');
+                const currentPage = ref('home');
+
+                // 统计数据和任务
+                const stats = ref({
+                    totalTasks: 0,
+                    completedTasks: 0,
+                    delayedTasks: 0,
+                    completionRate: 0
+                });
+
+                const tasks = ref([]);
+                const loadingTasks = ref(false);
+                const apiBase = ref('http://localhost:8080');
+
+                // 状态映射
+                const statusMap = {
+                    0: { text: '进行中', class: 'pending' },
+                    1: { text: '已完成', class: 'completed' },
+                    2: { text: '已延迟', class: 'delayed' },
+                    3: { text: '紧急', class: 'urgent' }
+                };
+
+                // 工具函数
+                const setPage = (page) => {
+                    currentPage.value = page;
+                };
+
+                const getStatusText = (status) => {
+                    return statusMap[status]?.text || '未知';
+                };
+
+                const getTaskStatusClass = (status) => {
+                    return statusMap[status]?.class || 'pending';
+                };
+
+                const formatDate = (dateString) => {
+                    if (!dateString) return '未设置';
+                    const date = new Date(dateString);
+                    return date.toLocaleDateString('zh-CN', {
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+                };
+
+                // 加载任务数据
+                const loadTasks = async () => {
+                    loadingTasks.value = true;
+                    try {
+                        const response = await axios.get(`${apiBase.value}/task`);
+                        tasks.value = response.data;
+
+                        // 计算统计数据
+                        const total = tasks.value.length;
+                        const completed = tasks.value.filter(t => t.status === 1).length;
+                        const delayed = tasks.value.filter(t => t.status === 2).length;
+                        const rate = total > 0 ? completed / total : 0;
+
+                        stats.value = {
+                            totalTasks: total,
+                            completedTasks: completed,
+                            delayedTasks: delayed,
+                            completionRate: rate
+                        };
+
+                    } catch (error) {
+                        console.error('加载任务失败:', error);
+                        // 使用模拟数据作为回退
+                        tasks.value = getMockTasks();
+                        calculateMockStats();
+                    } finally {
+                        loadingTasks.value = false;
+                    }
+                };
+
+                // 模拟数据（当API不可用时）
+                const getMockTasks = () => {
+                    return [
+                        {
+                            id: 1,
+                            title: '完成项目文档编写',
+                            status: 0,
+                            createdAt: '2026-03-28T10:00:00',
+                            deadline: '2026-04-02T18:00:00'
+                        },
+                        {
+                            id: 2,
+                            title: '学习Vue3框架新特性',
+                            status: 3,
+                            createdAt: '2026-03-29T14:30:00',
+                            deadline: '2026-03-31T23:59:59'
+                        },
+                        {
+                            id: 3,
+                            title: '晨跑锻炼30分钟',
+                            status: 1,
+                            createdAt: '2026-03-30T07:00:00',
+                            deadline: '2026-03-30T08:00:00'
+                        },
+                        {
+                            id: 4,
+                            title: '整理书桌和工作区',
+                            status: 2,
+                            createdAt: '2026-03-25T09:00:00',
+                            deadline: '2026-03-27T17:00:00'
+                        }
+                    ];
+                };
+
+                const calculateMockStats = () => {
+                    const mockTasks = getMockTasks();
+                    const total = mockTasks.length;
+                    const completed = mockTasks.filter(t => t.status === 1).length;
+                    const delayed = mockTasks.filter(t => t.status === 2).length;
+                    const rate = total > 0 ? completed / total : 0;
+
+                    stats.value = {
+                        totalTasks: total,
+                        completedTasks: completed,
+                        delayedTasks: delayed,
+                        completionRate: rate
+                    };
+                };
+
+                // 页面初始化
+                onMounted(() => {
+                    loadTasks();
+
+                    // 导航栏滚动效果
+                    window.addEventListener('scroll', () => {
+                        const nav = document.querySelector('.minimal-nav');
+                        if (window.scrollY > 20) {
+                            nav.style.boxShadow = 'var(--shadow-md)';
+                        } else {
+                            nav.style.boxShadow = 'none';
+                        }
+                    });
+                });
+
+                return {
+                    appName,
+                    version,
+                    currentPage,
+                    stats,
+                    tasks,
+                    loadingTasks,
+                    setPage,
+                    getStatusText,
+                    getTaskStatusClass,
+                    formatDate,
+                    loadTasks
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

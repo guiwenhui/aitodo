@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>健康检查 - AI Todo + 拖延症治疗器</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* 简约设计系统 - 精简版 */
+        :root {
+            --primary: #4f46e5;
+            --primary-light: #818cf8;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --bg: #ffffff;
+            --bg-light: #f9fafb;
+            --border: #e5e7eb;
+            --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --radius: 0.75rem;
+            --transition: all 0.2s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 简约导航 */
+        .minimal-nav {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+        }
+
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+
+        .nav-brand i {
+            color: var(--primary);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-light);
+            font-weight: 500;
+            transition: var(--transition);
+            padding: 0.5rem 0;
+        }
+
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+
+        .nav-links a.active {
+            color: var(--primary);
+            position: relative;
+        }
+
+        .nav-links a.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--primary);
+            border-radius: 1px;
+        }
+
+        /* 主内容 */
+        .health-container {
+            flex: 1;
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+            width: 100%;
+        }
+
+        .health-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .health-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .health-subtitle {
+            font-size: 1.125rem;
+            color: var(--text-light);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* 状态卡片 */
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .status-card {
+            background: white;
+            border-radius: var(--radius);
+            padding: 2rem;
+            border: 1px solid var(--border);
+            transition: var(--transition);
+            text-align: center;
+        }
+
+        .status-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--primary-light);
+        }
+
+        .status-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .status-icon.healthy {
+            color: var(--success);
+        }
+
+        .status-icon.warning {
+            color: var(--warning);
+        }
+
+        .status-icon.danger {
+            color: var(--danger);
+        }
+
+        .status-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+        }
+
+        .status-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .status-label {
+            font-size: 0.875rem;
+            color: var(--text-light);
+        }
+
+        .status-timestamp {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            margin-top: 1rem;
+            font-style: italic;
+        }
+
+        /* 健康详情 */
+        .health-details {
+            background: white;
+            border-radius: var(--radius);
+            padding: 2rem;
+            border: 1px solid var(--border);
+            margin-bottom: 3rem;
+        }
+
+        .details-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--text);
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .detail-item {
+            padding: 1rem;
+            background: var(--bg-light);
+            border-radius: calc(var(--radius) - 0.25rem);
+        }
+
+        .detail-label {
+            font-size: 0.875rem;
+            color: var(--text-light);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .detail-value {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        /* 操作区 */
+        .health-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 3rem;
+        }
+
+        .btn {
+            padding: 0.875rem 2rem;
+            border-radius: var(--radius);
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-light);
+            border-color: var(--primary);
+        }
+
+        /* 加载状态 */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-light);
+        }
+
+        .spinner {
+            border: 3px solid var(--border);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* 页脚 */
+        .minimal-footer {
+            background: var(--bg-light);
+            padding: 2rem 2rem;
+            border-top: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 700;
+            font-size: 1.125rem;
+            margin-bottom: 1rem;
+        }
+
+        .footer-logo i {
+            color: var(--primary);
+        }
+
+        .footer-info p {
+            color: var(--text-light);
+            margin-bottom: 0.25rem;
+            font-size: 0.875rem;
+        }
+
+        .footer-copyright {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+            color: var(--text-light);
+            font-size: 0.75rem;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .minimal-nav {
+                padding: 1rem;
+            }
+
+            .nav-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .nav-links {
+                gap: 1rem;
+            }
+
+            .health-container {
+                padding: 0 1rem;
+                margin: 1rem auto;
+            }
+
+            .health-title {
+                font-size: 2rem;
+            }
+
+            .health-subtitle {
+                font-size: 1rem;
+            }
+
+            .status-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .health-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn {
+                width: 100%;
+                max-width: 300px;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 简约导航 -->
+    <div th:replace="~{common/navbar :: top-nav}"></div>
+
+    <!-- 主内容 -->
+    <div class="health-container">
+        <header class="health-header">
+            <h1 class="health-title">系统健康检查</h1>
+            <p class="health-subtitle">
+                实时监控系统运行状态，确保服务稳定可靠。所有健康指标每10秒自动更新。
+            </p>
+        </header>
+
+        <!-- 状态卡片 -->
+        <div class="status-grid">
+            <div class="status-card">
+                <div class="status-icon healthy" id="statusIcon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h3 class="status-name" id="statusName">运行正常</h3>
+                <div class="status-value" id="statusValue">UP</div>
+                <div class="status-label">服务状态</div>
+                <div class="status-timestamp" id="statusTimestamp">最后更新: 加载中...</div>
+            </div>
+
+            <div class="status-card">
+                <div class="status-icon healthy">
+                    <i class="fas fa-heartbeat"></i>
+                </div>
+                <h3 class="status-name">服务名称</h3>
+                <div class="status-value" id="serviceName">AI Todo + 拖延症治疗器</div>
+                <div class="status-label">应用标识</div>
+            </div>
+
+            <div class="status-card">
+                <div class="status-icon healthy">
+                    <i class="fas fa-code-branch"></i>
+                </div>
+                <h3 class="status-name">版本</h3>
+                <div class="status-value" id="serviceVersion">1.0.0</div>
+                <div class="status-label">当前版本</div>
+            </div>
+        </div>
+
+        <!-- 健康详情 -->
+        <div class="health-details">
+            <h2 class="details-title">健康详情</h2>
+            <div class="details-grid">
+                <div class="detail-item">
+                    <div class="detail-label">API 端点</div>
+                    <div class="detail-value">/api/health</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Ping 测试</div>
+                    <div class="detail-value" id="pingStatus">检查中...</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">响应时间</div>
+                    <div class="detail-value" id="responseTime">-</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">检查次数</div>
+                    <div class="detail-value" id="checkCount">0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 操作区 -->
+        <div class="health-actions">
+            <button class="btn btn-primary" onclick="refreshHealth()">
+                <i class="fas fa-sync-alt"></i>
+                立即刷新
+            </button>
+            <a href="/health" class="btn btn-secondary">
+                <i class="fas fa-external-link-alt"></i>
+                查看健康页面
+            </a>
+            <a href="/" class="btn btn-secondary">
+                <i class="fas fa-home"></i>
+                返回首页
+            </a>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer class="minimal-footer">
+        <div class="footer-content">
+            <div class="footer-logo">
+                <i class="fas fa-robot"></i>
+                <span th:text="${appName}">AI Todo + 拖延症治疗器</span>
+            </div>
+            <div class="footer-info">
+                <p>版本 <span th:text="${version}">1.0.0</span></p>
+                <p>健康检查页面 - 简约设计</p>
+            </div>
+            <div class="footer-copyright">
+                <p>© 2026 <span th:text="${appName}">AI Todo + 拖延症治疗器</span> - 保留所有权利</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // 初始化变量
+        let checkCount = 0;
+        let lastUpdateTime = null;
+
+        // DOM 元素
+        const statusIcon = document.getElementById('statusIcon');
+        const statusName = document.getElementById('statusName');
+        const statusValue = document.getElementById('statusValue');
+        const statusTimestamp = document.getElementById('statusTimestamp');
+        const serviceName = document.getElementById('serviceName');
+        const serviceVersion = document.getElementById('serviceVersion');
+        const pingStatus = document.getElementById('pingStatus');
+        const responseTime = document.getElementById('responseTime');
+        const checkCountElement = document.getElementById('checkCount');
+
+        // 更新状态显示
+        function updateHealthStatus(healthData, responseTimeMs) {
+            // 更新状态卡片
+            const status = healthData.status || 'UP';
+            const service = healthData.service || 'AI Todo + 拖延症治疗器';
+            const version = healthData.version || '1.0.0';
+            const timestamp = healthData.timestamp || Date.now();
+
+            // 状态图标和颜色
+            if (status === 'UP') {
+                statusIcon.innerHTML = '<i class="fas fa-check-circle"></i>';
+                statusIcon.className = 'status-icon healthy';
+                statusName.textContent = '运行正常';
+                statusName.style.color = '';
+            } else if (status === 'DOWN') {
+                statusIcon.innerHTML = '<i class="fas fa-times-circle"></i>';
+                statusIcon.className = 'status-icon danger';
+                statusName.textContent = '服务异常';
+                statusName.style.color = 'var(--danger)';
+            } else {
+                statusIcon.innerHTML = '<i class="fas fa-exclamation-triangle"></i>';
+                statusIcon.className = 'status-icon warning';
+                statusName.textContent = '状态未知';
+                statusName.style.color = 'var(--warning)';
+            }
+
+            statusValue.textContent = status;
+            serviceName.textContent = service;
+            serviceVersion.textContent = version;
+
+            // 更新时间戳
+            const date = new Date(timestamp);
+            const timeStr = date.toLocaleTimeString('zh-CN', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            statusTimestamp.textContent = `最后更新: ${timeStr}`;
+            lastUpdateTime = date;
+
+            // 更新详情
+            pingStatus.textContent = '正常';
+            pingStatus.style.color = 'var(--success)';
+
+            if (responseTimeMs !== undefined) {
+                responseTime.textContent = `${responseTimeMs}ms`;
+                responseTime.style.color = responseTimeMs < 100 ? 'var(--success)' :
+                                          responseTimeMs < 500 ? 'var(--warning)' : 'var(--danger)';
+            }
+
+            checkCount++;
+            checkCountElement.textContent = checkCount;
+        }
+
+        // 获取健康数据
+        async function fetchHealthData() {
+            const startTime = Date.now();
+            try {
+                const response = await fetch('/api/health');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                const data = await response.json();
+                const endTime = Date.now();
+                const responseTimeMs = endTime - startTime;
+
+                updateHealthStatus(data, responseTimeMs);
+                return true;
+            } catch (error) {
+                console.error('健康检查失败:', error);
+
+                // 显示错误状态
+                statusIcon.innerHTML = '<i class="fas fa-times-circle"></i>';
+                statusIcon.className = 'status-icon danger';
+                statusName.textContent = '连接失败';
+                statusName.style.color = 'var(--danger)';
+                statusValue.textContent = 'ERROR';
+
+                const date = new Date();
+                statusTimestamp.textContent = `最后尝试: ${date.toLocaleTimeString('zh-CN', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                })}`;
+
+                pingStatus.textContent = '失败';
+                pingStatus.style.color = 'var(--danger)';
+
+                const endTime = Date.now();
+                responseTime.textContent = `${endTime - startTime}ms`;
+                responseTime.style.color = 'var(--danger)';
+
+                checkCount++;
+                checkCountElement.textContent = checkCount;
+
+                return false;
+            }
+        }
+
+        // 手动刷新
+        function refreshHealth() {
+            const refreshBtn = document.querySelector('.btn-primary');
+            const originalHtml = refreshBtn.innerHTML;
+
+            refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 刷新中...';
+            refreshBtn.disabled = true;
+
+            fetchHealthData().then(success => {
+                // 短暂延迟后恢复按钮状态
+                setTimeout(() => {
+                    refreshBtn.innerHTML = originalHtml;
+                    refreshBtn.disabled = false;
+                }, 500);
+            });
+        }
+
+        // 自动刷新（每10秒）
+        function startAutoRefresh() {
+            // 立即执行一次
+            fetchHealthData();
+
+            // 每10秒刷新一次
+            setInterval(fetchHealthData, 10000);
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            startAutoRefresh();
+        });
+    </script>
+</body>
+</html>

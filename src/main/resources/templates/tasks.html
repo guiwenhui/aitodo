@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle}">任务管理 - AI Todo</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* 基础样式 (简洁直观版) */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: #334155;
+            line-height: 1.6;
+        }
+
+        .main-container {
+            max-width: 1000px;
+            margin: 100px auto 40px;
+            padding: 0 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #1e293b;
+            margin-bottom: 10px;
+            font-size: 2em;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            color: #64748b;
+            font-size: 1.1em;
+        }
+
+        /* 添加任务表单 */
+        .add-task-form {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+            margin-bottom: 30px;
+            border: 1px solid #f1f5f9;
+        }
+
+        .form-title {
+            margin-bottom: 20px;
+            color: #1e293b;
+            font-size: 1.3em;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        input, select {
+            flex: 1;
+            padding: 14px 16px;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 15px;
+            background: #f8fafc;
+            color: #1e293b;
+            transition: all 0.2s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        button[type="submit"] {
+            padding: 0 30px;
+            background: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        button[type="submit"]:hover {
+            background: #4338ca;
+            transform: translateY(-1px);
+        }
+
+        /* 任务列表 */
+        .task-list {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+            overflow: hidden;
+            margin-bottom: 30px;
+            border: 1px solid #f1f5f9;
+        }
+
+        .list-header {
+            padding: 24px 30px;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fafbfc;
+        }
+
+        .list-title {
+            color: #1e293b;
+            font-size: 1.3em;
+        }
+
+        .stats {
+            color: #64748b;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .task-item {
+            padding: 24px 30px;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .task-item:hover {
+            background: #f8fafc;
+        }
+
+        .task-item:last-child {
+            border-bottom: none;
+        }
+
+        /* 任务状态颜色 */
+        .status-normal { border-left: 5px solid #3b82f6; }   
+        .status-urgent { border-left: 5px solid #f59e0b; }    
+        .status-delayed { border-left: 5px solid #ef4444; }   
+        .status-completed { border-left: 5px solid #10b981; } 
+
+        .task-info { flex: 1; }
+
+        .task-title {
+            font-weight: 600;
+            font-size: 1.15em;
+            margin-bottom: 8px;
+            color: #0f172a;
+        }
+
+        .task-meta {
+            display: flex;
+            gap: 24px;
+            font-size: 0.85em;
+            color: #64748b;
+            align-items: center;
+        }
+
+        .task-status {
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 0.8em;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-normal .task-status { background: #dbeafe; color: #2563eb; }
+        .status-urgent .task-status { background: #fef3c7; color: #d97706; }
+        .status-delayed .task-status { background: #fee2e2; color: #dc2626; }
+        .status-completed .task-status { background: #d1fae5; color: #059669; }
+
+        .task-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .task-actions button {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85em;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-complete { background: #d1fae5; color: #059669; }
+        .btn-complete:hover { background: #10b981; color: white; }
+
+        .btn-delayed { background: #fee2e2; color: #dc2626; }
+        .btn-delayed:hover { background: #ef4444; color: white; }
+
+        .btn-delete { background: #f1f5f9; color: #64748b; }
+        .btn-delete:hover { background: #cbd5e1; color: #0f172a; }
+
+        /* AI提醒区域 */
+        .ai-warning {
+            padding: 24px 30px;
+            border: 1px solid #fef3c7;
+            border-radius: 12px;
+            background: #fffbeb;
+            margin-bottom: 20px;
+        }
+
+        .ai-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            color: #d97706;
+            font-weight: 600;
+        }
+
+        .ai-icon { font-size: 1.4em; }
+
+        .ai-text {
+            color: #92400e;
+            line-height: 1.6;
+            font-size: 1.05em;
+        }
+
+        .ai-note {
+            margin-top: 12px;
+            font-size: 0.85em;
+            color: #b45309;
+        }
+
+        /* 空状态提示 */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #94a3b8;
+        }
+
+        .empty-icon {
+            font-size: 3.5em;
+            margin-bottom: 15px;
+            color: #cbd5e1;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .input-group { flex-direction: column; }
+            .task-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 16px;
+            }
+            .task-actions { align-self: flex-start; }
+            .task-meta { flex-wrap: wrap; gap: 12px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- 简约导航栏 -->
+    <div th:replace="~{common/navbar :: top-nav}"></div>
+
+    <div class="main-container">
+        <header>
+        <h1>AI Todo + 拖延症治疗器</h1>
+        <p class="subtitle">Thymeleaf 版本 - 任务管理页面</p>
+    </header>
+
+    <!-- 添加任务表单 -->
+    <div class="add-task-form">
+        <h2 class="form-title"><i class="fas fa-plus-circle"></i> 添加新任务</h2>
+        <form th:action="@{/task/add}" method="post" id="taskForm">
+            <div class="input-group">
+                <input type="text" name="title" placeholder="任务标题" required>
+                <input type="datetime-local" name="deadline" placeholder="截止时间">
+                <button type="submit">添加任务</button>
+            </div>
+            <p style="color: #7f8c8d; font-size: 0.9em; margin-top: 10px;">
+                <i class="fas fa-info-circle"></i> 提示：如果不设置截止时间，系统将自动设置为3天后
+            </p>
+        </form>
+    </div>
+
+    <!-- 任务列表 -->
+    <div class="task-list">
+        <div class="list-header">
+            <h2 class="list-title"><i class="fas fa-tasks"></i> 任务列表</h2>
+            <div class="stats">
+                <span th:text="'总计: ' + ${tasks != null ? tasks.size() : 0} + ' 个任务'">总计: 4 个任务</span>
+            </div>
+        </div>
+
+        <!-- 空状态 -->
+        <div th:if="${tasks == null or tasks.empty}" class="empty-state">
+            <div class="empty-icon">📭</div>
+            <p>还没有任务，添加一个开始吧！</p>
+            <p style="font-size: 0.9em; margin-top: 10px;">点击上方表单创建你的第一个任务</p>
+        </div>
+
+        <!-- 任务项示例（静态数据，实际应从后端获取） -->
+        <div th:if="${tasks == null or tasks.empty}">
+            <!-- 示例任务1：正常 -->
+            <div class="task-item status-normal">
+                <div class="task-info">
+                    <div class="task-title">完成项目文档</div>
+                    <div class="task-meta">
+                        <span>创建: 2026-03-28 10:00</span>
+                        <span>截止: 2026-04-02 18:00</span>
+                        <span class="task-status">正常</span>
+                    </div>
+                </div>
+                <div class="task-actions">
+                    <button class="btn-complete">完成</button>
+                    <button class="btn-urgent">标记紧急</button>
+                    <button class="btn-delayed">标记拖延</button>
+                    <button class="btn-delete">删除</button>
+                </div>
+            </div>
+
+            <!-- 示例任务2：紧急 -->
+            <div class="task-item status-urgent">
+                <div class="task-info">
+                    <div class="task-title">学习Vue3框架</div>
+                    <div class="task-meta">
+                        <span>创建: 2026-03-29 14:30</span>
+                        <span>截止: 2026-03-31 23:59</span>
+                        <span class="task-status">紧急</span>
+                    </div>
+                </div>
+                <div class="task-actions">
+                    <button class="btn-complete">完成</button>
+                    <button class="btn-delayed">标记拖延</button>
+                    <button class="btn-delete">删除</button>
+                </div>
+            </div>
+
+            <!-- 示例任务3：已完成 -->
+            <div class="task-item status-completed">
+                <div class="task-info">
+                    <div class="task-title">晨跑锻炼</div>
+                    <div class="task-meta">
+                        <span>创建: 2026-03-30 07:00</span>
+                        <span>截止: 2026-03-30 08:00</span>
+                        <span class="task-status">已完成</span>
+                    </div>
+                </div>
+                <div class="task-actions">
+                    <button class="btn-delete">删除</button>
+                </div>
+            </div>
+
+            <!-- 示例任务4：拖延 -->
+            <div class="task-item status-delayed">
+                <div class="task-info">
+                    <div class="task-title">整理书桌</div>
+                    <div class="task-meta">
+                        <span>创建: 2026-03-25 09:00</span>
+                        <span>截止: 2026-03-27 17:00</span>
+                        <span class="task-status">拖延</span>
+                    </div>
+                </div>
+                <div class="task-actions">
+                    <button class="btn-complete">完成</button>
+                    <button class="btn-urgent">标记紧急</button>
+                    <button class="btn-delete">删除</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 动态任务列表（当有后端数据时） -->
+        <div th:if="${tasks != null and !tasks.empty}">
+            <div th:each="task : ${tasks}" class="task-item"
+                 th:classappend="${task.status == 0 ? 'status-normal' : (task.status == 1 ? 'status-completed' : (task.status == 2 ? 'status-delayed' : 'status-urgent'))}">
+                <div class="task-info">
+                    <div class="task-title" th:text="${task.title}">任务标题</div>
+                    <div class="task-meta">
+                        <span th:text="'创建: ' + ${#temporals.format(task.createdAt, 'yyyy-MM-dd HH:mm')}">创建时间</span>
+                        <span th:if="${task.deadline != null}"
+                              th:text="'截止: ' + ${#temporals.format(task.deadline, 'yyyy-MM-dd HH:mm')}">截止时间</span>
+                        <span class="task-status"
+                              th:text="${task.status == 0 ? '正常' : (task.status == 1 ? '已完成' : (task.status == 2 ? '拖延' : '紧急'))}">状态</span>
+                    </div>
+                </div>
+                <div class="task-actions">
+                    <button th:if="${task.status != 1}" class="btn-complete"
+                            th:onclick="'completeTask(' + ${task.id} + ')'">完成</button>
+                    <button th:if="${task.status != 2}" class="btn-delayed"
+                            th:onclick="'markDelayed(' + ${task.id} + ')'">标记拖延</button>
+                    <button class="btn-delete" th:onclick="'deleteTask(' + ${task.id} + ')'">删除</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI提醒区域 -->
+    <div class="ai-warning">
+        <div class="ai-header">
+            <span class="ai-icon">🤖</span>
+            <h3>AI 智能提醒</h3>
+        </div>
+        <p class="ai-text" th:text="${aiWarning != null} ? ${aiWarning} :
+            '⏰ 你有1个紧急任务需要立即处理！拖延只会让问题变大，现在就开始行动吧！'">
+            ⏰ 你有1个紧急任务需要立即处理！拖延只会让问题变大，现在就开始行动吧！
+        </p>
+        <p class="ai-note">
+            <i class="fas fa-lightbulb"></i> 提示：AI提醒基于任务状态和截止时间智能生成，帮助你克服拖延症。
+        </p>
+    </div>
+
+    <!-- JavaScript交互 -->
+    <script>
+        // 模拟任务操作函数（实际应调用后端API）
+        function completeTask(taskId) {
+            if (confirm('标记任务为完成？')) {
+                fetch('/task/' + taskId + '/complete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        alert('任务已完成！');
+                        location.reload();
+                    } else {
+                        alert('操作失败');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            }
+        }
+
+        function markDelayed(taskId) {
+            if (confirm('标记任务为拖延？')) {
+                fetch('/task/' + taskId + '/delay', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        alert('任务已标记为拖延');
+                        location.reload();
+                    } else {
+                        alert('操作失败');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            }
+        }
+
+        function deleteTask(taskId) {
+            if (confirm('确定删除这个任务吗？')) {
+                fetch('/task/' + taskId, {
+                    method: 'DELETE'
+                })
+                .then(response => {
+                    if (response.ok) {
+                        alert('任务已删除');
+                        location.reload();
+                    } else {
+                        alert('删除失败');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            }
+        }
+
+        // 表单提交处理（示例）
+        document.getElementById('taskForm')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const taskData = {
+                title: formData.get('title'),
+                deadline: formData.get('deadline') || null
+            };
+
+            fetch('/task/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(taskData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert('任务添加成功！');
+                location.reload();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('添加失败');
+            });
+        });
+
+        console.log('AI Todo Thymeleaf 页面已加载');
+    </script>
+    </div>
+</body>
+</html>

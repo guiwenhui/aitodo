@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle}">AI 提醒 - 拖延症治疗器</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* AI警告页面特有样式 (简洁直观版) */
+        .warning-card {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            padding: 24px 30px;
+            margin-bottom: 20px;
+            border-left: 6px solid #e2e8f0;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .warning-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        .warning-card.urgent { border-left-color: #ef4444; }
+        .warning-card.delayed { border-left-color: #f59e0b; }
+        .warning-card.completed { border-left-color: #10b981; }
+        .warning-card.normal { border-left-color: #3b82f6; }
+
+        .warning-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .warning-title {
+            font-size: 1.15em;
+            font-weight: 600;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .warning-icon { font-size: 1.3em; }
+
+        .warning-badge {
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 0.8em;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-urgent { background: #fee2e2; color: #dc2626; }
+        .badge-delayed { background: #fef3c7; color: #d97706; }
+        .badge-completed { background: #d1fae5; color: #059669; }
+        .badge-normal { background: #dbeafe; color: #2563eb; }
+
+        .warning-content {
+            font-size: 1.05em;
+            line-height: 1.6;
+            color: #334155;
+            padding: 16px;
+            background: #f8fafc;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        .warning-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #94a3b8;
+            font-size: 0.85em;
+            margin-top: 10px;
+            padding-top: 16px;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        .warning-task {
+            font-weight: 500;
+            color: #64748b;
+        }
+
+        /* 汇总统计卡片（简洁版） */
+        .summary-card {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+            border: 1px solid #f1f5f9;
+        }
+
+        .summary-title {
+            font-size: 1.4em;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .summary-title i { color: #3b82f6; }
+
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .stat-item {
+            text-align: left;
+            padding: 24px 20px;
+            background: #f8fafc;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s ease;
+        }
+        
+        .stat-item:hover {
+            border-color: #cbd5e1;
+            background: #f1f5f9;
+        }
+
+        .stat-label {
+            font-size: 0.85em;
+            color: #64748b;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 2.2em;
+            font-weight: 800;
+            color: #0f172a;
+            line-height: 1;
+        }
+
+        .summary-text {
+            font-size: 1.05em;
+            line-height: 1.6;
+            color: #334155;
+            background: #eff6ff;
+            padding: 16px 20px;
+            border-radius: 10px;
+            border-left: 4px solid #3b82f6;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        
+        .summary-text::before {
+            content: '\f0eb';
+            font-family: 'Font Awesome 5 Free';
+            font-weight: 900;
+            color: #3b82f6;
+            font-size: 1.2em;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 30px;
+            color: #94a3b8;
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+        }
+
+        .empty-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+            color: #cbd5e1;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: #64748b;
+        }
+
+        .loading-spinner {
+            border: 3px solid #f1f5f9;
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .summary-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .summary-stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body style="background: #f5f7fa; font-family: 'Poppins', BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+    <!-- 简约导航栏 -->
+    <div th:replace="~{common/navbar :: top-nav}"></div>
+
+    <main class="container" style="max-width: 1200px; margin: 120px auto 30px; padding: 0 20px;">
+        <h1 style="margin-bottom: 30px; color: #2c3e50;">
+            <i class="fas fa-bell"></i> AI 智能提醒
+        </h1>
+        <p style="margin-bottom: 30px; color: #7f8c8d; font-size: 1.1em;">
+            基于你的任务状态和拖延情况，AI 生成个性化提醒，帮助你战胜拖延症！
+        </p>
+
+
+        <!-- 汇总统计卡片 -->
+        <div id="summaryContainer" class="summary-card" style="display: none;">
+            <div class="summary-title">
+                <i class="fas fa-chart-pie"></i> 任务统计概览
+            </div>
+            <div class="summary-stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="totalTasks">0</div>
+                    <div class="stat-label">总任务数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="urgentTasks">0</div>
+                    <div class="stat-label">紧急任务</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="delayedTasks">0</div>
+                    <div class="stat-label">拖延任务</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="completedTasks">0</div>
+                    <div class="stat-label">已完成任务</div>
+                </div>
+            </div>
+            <div class="summary-text" id="summaryText">
+                加载中...
+            </div>
+        </div>
+
+        <!-- AI警告列表 -->
+        <div id="warningsContainer">
+            <div class="loading" id="loadingIndicator">
+                <div class="loading-spinner"></div>
+                <p>正在加载 AI 提醒...</p>
+            </div>
+
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <div class="empty-icon">📭</div>
+                <div class="empty-text">该用户还没有任何任务</div>
+                <p style="color: #7f8c8d;">前往 <a href="/tasks">任务管理</a> 创建你的第一个任务吧！</p>
+            </div>
+
+            <div id="warningsList" style="display: none;">
+                <!-- AI警告卡片将通过JavaScript动态生成 -->
+            </div>
+        </div>
+
+        <!-- 示例警告（初始显示） -->
+        <div id="exampleWarnings">
+            <h2 style="margin: 40px 0 20px; color: #2c3e50; border-bottom: 2px solid #eee; padding-bottom: 10px;">
+                <i class="fas fa-lightbulb"></i> AI提醒示例
+            </h2>
+            <div class="warning-card urgent">
+                <div class="warning-header">
+                    <div class="warning-title">
+                        <span class="warning-icon">🚨</span>
+                        紧急警告
+                    </div>
+                    <span class="warning-badge badge-urgent">紧急</span>
+                </div>
+                <div class="warning-content urgent">
+                    ⏰ 任务「完成项目文档」距离截止时间只剩12小时！拖延只会让问题变大，现在就开始行动吧！
+                </div>
+                <div class="warning-meta">
+                    <span class="warning-task">任务：完成项目文档</span>
+                    <span class="warning-time">生成时间：刚刚</span>
+                </div>
+            </div>
+
+            <div class="warning-card delayed">
+                <div class="warning-header">
+                    <div class="warning-title">
+                        <span class="warning-icon">⏰</span>
+                        拖延提醒
+                    </div>
+                    <span class="warning-badge badge-delayed">拖延</span>
+                </div>
+                <div class="warning-content delayed">
+                    😅 任务「整理书桌」已经延迟3天了！别让拖延成为习惯，现在就花10分钟整理一下吧！
+                </div>
+                <div class="warning-meta">
+                    <span class="warning-task">任务：整理书桌</span>
+                    <span class="warning-time">生成时间：5分钟前</span>
+                </div>
+            </div>
+
+            <div class="warning-card completed">
+                <div class="warning-header">
+                    <div class="warning-title">
+                        <span class="warning-icon">🎉</span>
+                        完成鼓励
+                    </div>
+                    <span class="warning-badge badge-completed">已完成</span>
+                </div>
+                <div class="warning-content completed">
+                    🌟 太棒了！任务「晨跑锻炼」已经完成！继续保持这个好习惯，你的自律正在改变生活！
+                </div>
+                <div class="warning-meta">
+                    <span class="warning-task">任务：晨跑锻炼</span>
+                    <span class="warning-time">生成时间：1小时前</span>
+                </div>
+            </div>
+
+            <div class="warning-card normal">
+                <div class="warning-header">
+                    <div class="warning-title">
+                        <span class="warning-icon">📋</span>
+                        正常提醒
+                    </div>
+                    <span class="warning-badge badge-normal">正常</span>
+                </div>
+                <div class="warning-content normal">
+                    📊 任务「学习Vue3框架」还有3天截止。保持当前进度，按时完成目标！
+                </div>
+                <div class="warning-meta">
+                    <span class="warning-task">任务：学习Vue3框架</span>
+                    <span class="warning-time">生成时间：今天</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer style="margin-top: 60px; padding: 30px 0; background: #2c3e50; color: white; text-align: center;">
+        <div class="container">
+            <p>© 2026 AI Todo + 拖延症治疗器 - 版本 1.0.0</p>
+            <p>用技术治愈拖延症</p>
+        </div>
+    </footer>
+
+    <script>
+        // DOM元素
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const emptyState = document.getElementById('emptyState');
+        const warningsList = document.getElementById('warningsList');
+        const exampleWarnings = document.getElementById('exampleWarnings');
+        const summaryContainer = document.getElementById('summaryContainer');
+        const totalTasksEl = document.getElementById('totalTasks');
+        const urgentTasksEl = document.getElementById('urgentTasks');
+        const delayedTasksEl = document.getElementById('delayedTasks');
+        const completedTasksEl = document.getElementById('completedTasks');
+        const summaryTextEl = document.getElementById('summaryText');
+
+        // 警告样式映射
+        const styleConfig = {
+            'urgent_warning': { class: 'urgent', icon: '🚨', label: '紧急' },
+            'overdue': { class: 'urgent', icon: '⏰', label: '超时' },
+            'delayed_humorous': { class: 'delayed', icon: '😅', label: '拖延' },
+            'completed': { class: 'completed', icon: '🎉', label: '已完成' },
+            'normal_reminder': { class: 'normal', icon: '📋', label: '正常' },
+            'pending_no_deadline': { class: 'normal', icon: '📝', label: '待处理' },
+            'unknown': { class: 'normal', icon: '❓', label: '未知' }
+        };
+
+        // 格式化时间
+        function formatTime(date) {
+            const now = new Date();
+            const diffMs = now - new Date(date);
+            const diffMins = Math.floor(diffMs / 60000);
+            const diffHours = Math.floor(diffMs / 3600000);
+            const diffDays = Math.floor(diffMs / 86400000);
+
+            if (diffMins < 1) return '刚刚';
+            if (diffMins < 60) return `${diffMins}分钟前`;
+            if (diffHours < 24) return `${diffHours}小时前`;
+            if (diffDays < 7) return `${diffDays}天前`;
+            return new Date(date).toLocaleDateString();
+        }
+
+        // 加载当前用户的AI警告
+        async function loadCurrentUserWarnings() {
+            showLoading();
+            hideExampleWarnings();
+
+            try {
+                // 尝试多个可能的API端点
+                const endpoints = [
+                    '/task/my-ai-warnings',
+                    '/task/user/1/ai-warnings',
+                    '/api/ai-warnings',
+                    '/api/task/ai-warnings'
+                ];
+
+                let response = null;
+                let error = null;
+
+                // 按顺序尝试每个端点
+                for (const endpoint of endpoints) {
+                    try {
+                        response = await fetch(endpoint, {
+                            credentials: 'include',
+                            headers: {
+                                'Accept': 'application/json'
+                            }
+                        });
+
+                        if (response.ok) {
+                            const contentType = response.headers.get('content-type');
+                            if (contentType && contentType.includes('application/json')) {
+                                break; // 找到可用的端点
+                            }
+                        }
+                    } catch (e) {
+                        error = e;
+                        continue; // 尝试下一个端点
+                    }
+                }
+
+                if (!response || !response.ok) {
+                    throw new Error(`API请求失败，状态码: ${response ? response.status : '无响应'}`);
+                }
+
+                const data = await response.json();
+                displayWarnings(data);
+            } catch (error) {
+                console.error('加载AI警告失败:', error);
+                showError('加载失败：' + error.message);
+                hideLoading();
+                showExampleWarnings(); // 显示示例作为回退
+            }
+        }
+
+        // 显示警告数据
+        function displayWarnings(data) {
+            hideLoading();
+
+            // 检查是否有警告数据
+            if (!data.aiWarnings || data.aiWarnings.length === 0) {
+                showEmptyState();
+                return;
+            }
+
+            // 显示汇总数据
+            if (data.totalTasks !== undefined) {
+                showSummary(data);
+            }
+
+            // 生成警告卡片
+            const warningsHTML = data.aiWarnings.map(warning => {
+                const style = styleConfig[warning.warningStyle] || styleConfig.unknown;
+                const timeText = warning.generatedTime ? formatTime(warning.generatedTime) : '刚刚';
+
+                return `
+                    <div class="warning-card ${style.class}">
+                        <div class="warning-header">
+                            <div class="warning-title">
+                                <span class="warning-icon">${style.icon}</span>
+                                ${style.label}提醒
+                            </div>
+                            <span class="warning-badge badge-${style.class}">${style.label}</span>
+                        </div>
+                        <div class="warning-content ${style.class}">
+                            ${warning.aiWarning || 'AI提醒文本'}
+                        </div>
+                        <div class="warning-meta">
+                            <span class="warning-task">任务：${warning.title || '未知任务'}</span>
+                            <span class="warning-time">生成时间：${timeText}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            warningsList.innerHTML = warningsHTML;
+            warningsList.style.display = 'block';
+            emptyState.style.display = 'none';
+            exampleWarnings.style.display = 'none';
+        }
+
+        // 显示汇总数据
+        function showSummary(data) {
+            summaryContainer.style.display = 'block';
+            totalTasksEl.textContent = data.totalTasks || 0;
+            urgentTasksEl.textContent = data.urgentTasks || 0;
+            delayedTasksEl.textContent = data.delayedTasks || 0;
+            completedTasksEl.textContent = data.completedTasks || 0;
+            summaryTextEl.textContent = data.summary || '暂无汇总信息';
+        }
+
+        // 显示加载状态
+        function showLoading() {
+            loadingIndicator.style.display = 'block';
+            warningsList.style.display = 'none';
+            emptyState.style.display = 'none';
+            summaryContainer.style.display = 'none';
+        }
+
+        // 隐藏加载状态
+        function hideLoading() {
+            loadingIndicator.style.display = 'none';
+        }
+
+        // 显示空状态
+        function showEmptyState() {
+            warningsList.style.display = 'none';
+            emptyState.style.display = 'block';
+            summaryContainer.style.display = 'none';
+        }
+
+        // 显示错误
+        function showError(message) {
+            warningsList.innerHTML = `<div class="card" style="background: #ffebee; color: #c62828; padding: 20px; text-align: center;">
+                <i class="fas fa-exclamation-triangle"></i> ${message}
+            </div>`;
+            warningsList.style.display = 'block';
+            emptyState.style.display = 'none';
+        }
+
+        // 隐藏示例警告
+        function hideExampleWarnings() {
+            exampleWarnings.style.display = 'none';
+        }
+
+        // 显示示例警告
+        function showExampleWarnings() {
+            exampleWarnings.style.display = 'block';
+            warningsList.style.display = 'none';
+            emptyState.style.display = 'none';
+            summaryContainer.style.display = 'none';
+        }
+
+        // 页面加载时自动加载当前用户的警告
+        document.addEventListener('DOMContentLoaded', () => {
+            // 立即显示加载状态
+            showLoading();
+            // 开始加载数据
+            loadCurrentUserWarnings();
+        });
+    </script>
+</body>
+</html>
