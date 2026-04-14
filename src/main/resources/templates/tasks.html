@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${pageTitle}">任务管理 - AI Todo</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
     <style>
         /* 基础样式 (简洁直观版) */
         * {
@@ -269,12 +270,10 @@
 <body>
     <!-- 简约导航栏 -->
     <div th:replace="~{common/navbar :: top-nav}"></div>
-
     <div class="main-container">
         <header>
-        <h1>AI Todo + 拖延症治疗器</h1>
-        <p class="subtitle">Thymeleaf 版本 - 任务管理页面</p>
-    </header>
+        <h1>AI Todo</h1>
+        </header>
 
     <!-- 添加任务表单 -->
     <div class="add-task-form">

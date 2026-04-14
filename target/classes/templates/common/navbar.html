@@ -6,12 +6,13 @@
     <div class="nav-container">
         <a href="/" class="nav-brand">
             <i class="fas fa-robot"></i>
-            <h1 th:text="${appName ?: 'AI Todo'}">AI Todo + 拖延症治疗器</h1>
+            <h1 th:text="${appName ?: 'AI Todo'}">AI Todo</h1>
         </a>
         <ul class="nav-links">
             <li><a href="/"><i class="fas fa-home"></i> 首页</a></li>
             <li><a href="/tasks"><i class="fas fa-tasks"></i> 任务管理</a></li>
             <li><a href="/ai-warnings"><i class="fas fa-bell"></i> AI提醒</a></li>
+            <li><a href="/leaderboard"><i class="fas fa-trophy"></i> 积分排行榜</a></li>
             <li><a href="/health"><i class="fas fa-heartbeat"></i> 健康检查</a></li>
 
             <li th:if="${loggedIn}">
@@ -23,7 +24,7 @@
                 </a>
             </li>
             <li th:if="${loggedIn}">
-                <a href="/user/logout"><i class="fas fa-sign-out-alt"></i> 退出</a>
+                <a href="/logout"><i class="fas fa-sign-out-alt"></i> 退出</a>
             </li>
             <li th:unless="${loggedIn}">
                 <a href="/login"><i class="fas fa-sign-in-alt"></i> 登录</a>

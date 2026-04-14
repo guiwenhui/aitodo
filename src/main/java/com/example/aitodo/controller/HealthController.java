@@ -15,7 +15,7 @@ public class HealthController {
     public Map<String, Object> health() {
         Map<String, Object> healthInfo = new HashMap<>();
         healthInfo.put("status", "UP");
-        healthInfo.put("service", "AI Todo + 拖延症治疗器");
+        healthInfo.put("service", "AI Todo");
         healthInfo.put("version", "1.0.0");
         healthInfo.put("timestamp", System.currentTimeMillis());
         return healthInfo;

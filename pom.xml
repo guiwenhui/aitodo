@@ -12,7 +12,6 @@
     <artifactId>ai-todo-procrastination-cure</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>ai-todo-procrastination-cure</name>
-    <description>AI Todo + 拖延症治疗器 for computer design competition</description>
     <properties>
         <java.version>21</java.version>
     </properties>

@@ -28,6 +28,9 @@ public class WebController {
         // 检查用户是否登录
         Long userId = (Long) session.getAttribute("userId");
         if (userId != null) {
+            model.addAttribute("loggedIn", true);
+            // 你的 session 里存的是用户名还是对象？这里假设存了 username
+            model.addAttribute("username", session.getAttribute("username"));
             // 已登录，显示 vue-home
             return "vue-home";
         } else {
@@ -101,18 +104,34 @@ public class WebController {
      * 积分排行榜 / 数据大屏 (Vue项目入口)
      */
     @GetMapping("/leaderboard")
-    public String leaderboard(HttpSession session) {
+    public String leaderboard(HttpSession session , Model model) {
         Long userId = (Long) session.getAttribute("userId");
         if (userId == null) {
             return "redirect:/login";
         }
-        return "forward:/vue/index.html";
+        // 🌟 补充导航栏需要的用户信息
+        model.addAttribute("loggedIn", true);
+        model.addAttribute("username", session.getAttribute("username"));
+
+        // 🌟 直接返回模板名称，让 Spring Boot 去 templates 文件夹下找
+        return "leaderboard";
     }
     /**
      * 健康检查页面
      */
     @GetMapping("/health")
-    public String healthPage(Model model) {
+    public String healthPage(HttpSession session, Model model) {
+        // 1. 从 session 中获取登录信息
+        Long userId = (Long) session.getAttribute("userId");
+        String username = (String) session.getAttribute("username");
+        if (userId != null) {
+            // 已登录
+            model.addAttribute("loggedIn", true);
+            model.addAttribute("username", username);
+        } else {
+            // 未登录
+            model.addAttribute("loggedIn", false);
+        }
         model.addAttribute("appName", "AI Todo + 拖延症治疗器");
         model.addAttribute("version", "1.0.0");
         return "health";
