@@ -591,6 +591,7 @@
         <div th:replace="~{common/navbar :: top-nav}"></div>
     <div id="app">
         <!-- 简约英雄区域 -->
+
         <section class="vue-hero">
             <div class="vue-hero-content">
                 <h1 class="vue-hero-title">智能任务管理，告别拖延</h1>
@@ -777,7 +778,7 @@
 
                 const tasks = ref([]);
                 const loadingTasks = ref(false);
-                const apiBase = ref('http://localhost:8080');
+                const apiBase = ref('');
 
                 // 状态映射
                 const statusMap = {

@@ -66,27 +66,34 @@ public interface UserStatsMapper {
             "VALUES(#{userId}, 0, 0, 0, 1)")
     int initUserStats(Long userId);
 
-    // 获取用户排名（按积分降序）
     @Select("SELECT *, " +
-            "(SELECT COUNT(*) FROM user_stats us2 WHERE us2.total_points > us1.total_points) + 1 AS rank " +
+            "(SELECT COUNT(*) FROM user_stats us2 " +
+            "WHERE us2.current_level > us1.current_level " +
+            "OR (us2.current_level = us1.current_level AND us2.total_points > us1.total_points)) + 1 AS rank " +
             "FROM user_stats us1 WHERE user_id = #{userId}")
     UserStats selectWithRank(Long userId);
 
-    // 获取前N名用户
-    @Select("SELECT * FROM user_stats ORDER BY total_points DESC LIMIT #{limit}")
+    // 🌟 修复 2：获取前N名用户
+    @Select("SELECT * FROM user_stats ORDER BY current_level DESC, total_points DESC LIMIT #{limit}")
     List<UserStats> selectTopUsers(@Param("limit") int limit);
 
+    // 🌟 修复 3：获取排行榜列表（带排名计算，双重排序）
     @Select("SELECT us.user_id AS userId, u.username, us.total_points AS points, us.current_level AS level, " +
-            "(SELECT COUNT(*) FROM user_stats us2 WHERE us2.total_points > us.total_points) + 1 AS `rank` " +
+            "(SELECT COUNT(*) FROM user_stats us2 " +
+            "WHERE us2.current_level > us.current_level " +
+            "OR (us2.current_level = us.current_level AND us2.total_points > us.total_points)) + 1 AS `rank` " +
             "FROM user_stats us " +
             "LEFT JOIN users u ON us.user_id = u.id " +
-            "ORDER BY us.total_points DESC LIMIT #{limit}")
+            "ORDER BY us.current_level DESC, us.total_points DESC LIMIT #{limit}")
     List<LeaderboardEntryDTO> selectLeaderboard(@Param("limit") int limit);
 
+    // 🌟 修复 4：获取完整排行榜（带排名计算，双重排序）
     @Select("SELECT us.user_id AS userId, u.username, us.total_points AS points, us.current_level AS level, " +
-            "(SELECT COUNT(*) FROM user_stats us2 WHERE us2.total_points > us.total_points) + 1 AS `rank` " +
+            "(SELECT COUNT(*) FROM user_stats us2 " +
+            "WHERE us2.current_level > us.current_level " +
+            "OR (us2.current_level = us.current_level AND us2.total_points > us.total_points)) + 1 AS `rank` " +
             "FROM user_stats us " +
             "LEFT JOIN users u ON us.user_id = u.id " +
-            "ORDER BY us.total_points DESC")
+            "ORDER BY us.current_level DESC, us.total_points DESC")
     List<LeaderboardEntryDTO> selectAllLeaderboard();
 }

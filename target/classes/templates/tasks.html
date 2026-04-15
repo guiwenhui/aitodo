@@ -3,502 +3,456 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${pageTitle}">任务管理 - AI Todo</title>
+    <title th:text="${pageTitle != null ? pageTitle : '任务管理 - AI Todo'}">任务管理 - AI Todo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" th:href="@{/css/style.css}">
+
     <style>
-        /* 基础样式 (简洁直观版) */
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        :root {
+            --bg-body: #F9FAFB;
+            --bg-surface: #FFFFFF;
+            --border-color: #E5E7EB;
+            --text-primary: #111827;
+            --text-secondary: #4B5563;
+            --text-tertiary: #9CA3AF;
+            --brand-primary: #111827;
+
+            --status-normal-bg: #EEF2FF; --status-normal-text: #4F46E5;
+            --status-urgent-bg: #FEF3C7; --status-urgent-text: #D97706;
+            --status-delayed-bg: #FEE2E2; --status-delayed-text: #DC2626;
+            --status-done-bg: #D1FAE5;   --status-done-text: #059669;
+
+            --radius-lg: 16px;
+            --radius-md: 10px;
+            --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.03);
         }
 
         body {
-            background-color: #f5f7fa;
-            color: #334155;
-            line-height: 1.6;
+            background-color: var(--bg-body);
+            color: var(--text-secondary);
+            font-family: 'Poppins', -apple-system, sans-serif;
+            margin: 0; padding: 0;
+            -webkit-font-smoothing: antialiased;
         }
 
-        .main-container {
-            max-width: 1000px;
-            margin: 100px auto 40px;
-            padding: 0 20px;
+        .workspace-container {
+            max-width: 1200px;
+            margin: 100px auto 60px;
+            padding: 0 32px;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 340px;
+            gap: 32px;
+            align-items: start;
         }
 
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
+        .workspace-header { grid-column: 1 / -1; margin-bottom: 8px; }
+        .page-title { color: var(--text-primary); font-size: 2rem; font-weight: 700; margin-bottom: 6px; }
+        .page-subtitle { color: var(--text-tertiary); font-size: 1rem; }
 
-        h1 {
-            color: #1e293b;
-            margin-bottom: 10px;
-            font-size: 2em;
-            font-weight: 700;
-        }
-
-        .subtitle {
-            color: #64748b;
-            font-size: 1.1em;
-        }
-
-        /* 添加任务表单 */
-        .add-task-form {
-            background: #ffffff;
-            padding: 30px;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
-            margin-bottom: 30px;
-            border: 1px solid #f1f5f9;
-        }
-
-        .form-title {
-            margin-bottom: 20px;
-            color: #1e293b;
-            font-size: 1.3em;
-        }
-
-        .input-group {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 10px;
-        }
-
-        input, select {
-            flex: 1;
-            padding: 14px 16px;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 15px;
-            background: #f8fafc;
-            color: #1e293b;
-            transition: all 0.2s;
-        }
-
-        input:focus, select:focus {
-            outline: none;
-            border-color: #3b82f6;
-            background: #ffffff;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
-
-        button[type="submit"] {
-            padding: 0 30px;
-            background: #4f46e5;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            transition: all 0.2s;
-        }
-
-        button[type="submit"]:hover {
-            background: #4338ca;
-            transform: translateY(-1px);
-        }
-
-        /* 任务列表 */
-        .task-list {
-            background: #ffffff;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+        .task-board {
+            background: var(--bg-surface);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-soft);
+            border: 1px solid var(--border-color);
             overflow: hidden;
-            margin-bottom: 30px;
-            border: 1px solid #f1f5f9;
+            min-height: 500px;
         }
 
-        .list-header {
-            padding: 24px 30px;
-            border-bottom: 1px solid #f1f5f9;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #fafbfc;
+        .folder-tabs {
+            display: flex; gap: 8px; padding: 20px 24px 0;
+            border-bottom: 1px solid var(--border-color); background: #FAFAFA;
         }
 
-        .list-title {
-            color: #1e293b;
-            font-size: 1.3em;
+        .tab-btn {
+            display: flex; align-items: center; gap: 8px; padding: 12px 20px;
+            background: transparent; border: none; border-radius: 10px 10px 0 0;
+            font-size: 0.95rem; font-weight: 600; color: var(--text-tertiary);
+            cursor: pointer; transition: all 0.2s ease; position: relative; bottom: -1px;
         }
 
-        .stats {
-            color: #64748b;
-            font-size: 0.9em;
-            font-weight: 500;
+        .tab-btn:hover { color: var(--text-primary); }
+        .tab-btn.active { background: var(--bg-surface); color: var(--text-primary); border: 1px solid var(--border-color); border-bottom-color: var(--bg-surface); }
+        .tab-count { background: #F3F4F6; color: var(--text-secondary); padding: 2px 8px; border-radius: 12px; font-size: 0.75rem; }
+        .tab-btn.active .tab-count { background: var(--brand-primary); color: white; }
+
+        .task-list { padding: 0; }
+        .task-card {
+            padding: 20px 24px; border-bottom: 1px solid var(--border-color);
+            display: flex; justify-content: space-between; align-items: flex-start; transition: background 0.2s;
         }
+        .task-card:hover { background: var(--bg-body); }
+        .task-card:last-child { border-bottom: none; }
 
-        .task-item {
-            padding: 24px 30px;
-            border-bottom: 1px solid #f1f5f9;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: all 0.2s;
-            position: relative;
-        }
+        .card-left { display: flex; gap: 16px; }
+        .task-icon { font-size: 1.2rem; margin-top: 2px; color: var(--text-tertiary); }
+        .task-title { font-size: 1.05rem; font-weight: 600; color: var(--text-primary); margin-bottom: 6px; }
+        .task-meta { display: flex; gap: 16px; font-size: 0.8rem; color: var(--text-tertiary); align-items: center; }
 
-        .task-item:hover {
-            background: #f8fafc;
-        }
+        .card-right { display: flex; align-items: center; gap: 16px; }
+        .status-badge { padding: 4px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.5px; }
+        .badge-normal { background: var(--status-normal-bg); color: var(--status-normal-text); }
+        .badge-urgent { background: var(--status-urgent-bg); color: var(--status-urgent-text); }
+        .badge-delayed { background: var(--status-delayed-bg); color: var(--status-delayed-text); }
+        .badge-done { background: var(--status-done-bg); color: var(--status-done-text); }
 
-        .task-item:last-child {
-            border-bottom: none;
-        }
+        .task-actions { display: flex; gap: 8px; opacity: 0; transition: opacity 0.2s; }
+        .task-card:hover .task-actions { opacity: 1; }
+        .action-btn { width: 32px; height: 32px; border-radius: 8px; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; transition: background 0.2s; }
+        .action-btn.check { color: var(--status-done-text); background: var(--status-done-bg); } .action-btn.check:hover { background: #10B981; color: white; }
+        .action-btn.delete { color: var(--status-delayed-text); background: transparent; } .action-btn.delete:hover { background: var(--status-delayed-bg); }
 
-        /* 任务状态颜色 */
-        .status-normal { border-left: 5px solid #3b82f6; }   
-        .status-urgent { border-left: 5px solid #f59e0b; }    
-        .status-delayed { border-left: 5px solid #ef4444; }   
-        .status-completed { border-left: 5px solid #10b981; } 
+        /* 🌟 心流舱按钮专属样式 */
+        .action-btn.focus { color: #6366F1; background: #EEF2FF; }
+        .action-btn.focus:hover { background: #6366F1; color: white; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
 
-        .task-info { flex: 1; }
+        .empty-state { text-align: center; padding: 60px 20px; color: var(--text-tertiary); display: none; }
+        .empty-icon { font-size: 3rem; margin-bottom: 12px; opacity: 0.5; }
 
-        .task-title {
-            font-weight: 600;
-            font-size: 1.15em;
-            margin-bottom: 8px;
-            color: #0f172a;
-        }
+        .sidebar { display: flex; flex-direction: column; gap: 24px; }
+        .side-card { background: var(--bg-surface); border-radius: var(--radius-lg); box-shadow: var(--shadow-soft); border: 1px solid var(--border-color); padding: 24px; }
+        .card-title { color: var(--text-primary); font-size: 1.1rem; font-weight: 600; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        .input-group { display: flex; flex-direction: column; gap: 12px; }
+        input { width: 100%; padding: 12px 14px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 0.95rem; background: var(--bg-body); transition: all 0.2s; }
+        input:focus { outline: none; border-color: var(--brand-primary); background: var(--bg-surface); box-shadow: 0 0 0 3px rgba(17, 24, 39, 0.1); }
+        button[type="submit"] { width: 100%; padding: 12px; background: var(--brand-primary); color: white; border: none; border-radius: var(--radius-md); font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        button[type="submit"]:hover { background: #000000; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
 
-        .task-meta {
-            display: flex;
-            gap: 24px;
-            font-size: 0.85em;
-            color: #64748b;
-            align-items: center;
-        }
+        .ai-warning { background: linear-gradient(145deg, #FFFBEB 0%, #FFFFFF 100%); border-color: #FEF3C7; }
+        .ai-header { color: #D97706; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+        .ai-text { color: #92400E; font-size: 0.95rem; line-height: 1.6; }
 
-        .task-status {
-            padding: 4px 12px;
-            border-radius: 6px;
-            font-size: 0.8em;
-            font-weight: 600;
-            text-transform: uppercase;
-        }
+        @media (max-width: 960px) { .workspace-container { grid-template-columns: 1fr; } .task-actions { opacity: 1; } }
 
-        .status-normal .task-status { background: #dbeafe; color: #2563eb; }
-        .status-urgent .task-status { background: #fef3c7; color: #d97706; }
-        .status-delayed .task-status { background: #fee2e2; color: #dc2626; }
-        .status-completed .task-status { background: #d1fae5; color: #059669; }
+        .toast-container { position: fixed; top: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 12px; }
+        .modern-toast { background: var(--bg-surface); padding: 16px 20px; border-radius: var(--radius-md); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); display: flex; align-items: center; gap: 12px; font-size: 0.95rem; font-weight: 500; transform: translateX(120%); transition: transform 0.4s; border: 1px solid var(--border-color); color: var(--text-primary); }
+        .modern-toast.show { transform: translateX(0); }
+        .modern-toast.success .toast-icon { color: #10B981; } .modern-toast.error .toast-icon { color: #EF4444; }
 
-        .task-actions {
-            display: flex;
-            gap: 8px;
-        }
-
-        .task-actions button {
-            padding: 8px 16px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.85em;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
-
-        .btn-complete { background: #d1fae5; color: #059669; }
-        .btn-complete:hover { background: #10b981; color: white; }
-
-        .btn-delayed { background: #fee2e2; color: #dc2626; }
-        .btn-delayed:hover { background: #ef4444; color: white; }
-
-        .btn-delete { background: #f1f5f9; color: #64748b; }
-        .btn-delete:hover { background: #cbd5e1; color: #0f172a; }
-
-        /* AI提醒区域 */
-        .ai-warning {
-            padding: 24px 30px;
-            border: 1px solid #fef3c7;
-            border-radius: 12px;
-            background: #fffbeb;
-            margin-bottom: 20px;
-        }
-
-        .ai-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 12px;
-            color: #d97706;
-            font-weight: 600;
-        }
-
-        .ai-icon { font-size: 1.4em; }
-
-        .ai-text {
-            color: #92400e;
-            line-height: 1.6;
-            font-size: 1.05em;
-        }
-
-        .ai-note {
-            margin-top: 12px;
-            font-size: 0.85em;
-            color: #b45309;
-        }
-
-        /* 空状态提示 */
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #94a3b8;
-        }
-
-        .empty-icon {
-            font-size: 3.5em;
-            margin-bottom: 15px;
-            color: #cbd5e1;
-        }
-
-        /* 响应式设计 */
-        @media (max-width: 768px) {
-            .input-group { flex-direction: column; }
-            .task-item {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 16px;
-            }
-            .task-actions { align-self: flex-start; }
-            .task-meta { flex-wrap: wrap; gap: 12px; }
-        }
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(17, 24, 39, 0.4); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 10000; opacity: 0; visibility: hidden; transition: all 0.3s; }
+        .modal-overlay.show { opacity: 1; visibility: visible; }
+        .modern-modal { background: var(--bg-surface); padding: 24px; border-radius: var(--radius-lg); width: 90%; max-width: 400px; transform: scale(0.95) translateY(10px); transition: all 0.3s; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+        .modal-overlay.show .modern-modal { transform: scale(1) translateY(0); }
+        .modal-title { font-size: 1.15rem; font-weight: 600; margin-bottom: 8px; }
+        .modal-desc { font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 24px; line-height: 1.5; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 12px; }
+        .btn-cancel, .btn-danger, .btn-primary { padding: 10px 16px; border: none; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+        .btn-cancel { background: #F3F4F6; color: var(--text-secondary); } .btn-cancel:hover { background: #E5E7EB; color: var(--text-primary); }
+        .btn-danger { background: #EF4444; color: white; } .btn-danger:hover { background: #DC2626; }
+        .btn-primary { background: var(--brand-primary); color: white; } .btn-primary:hover { transform: translateY(-1px); }
     </style>
 </head>
 <body>
-    <!-- 简约导航栏 -->
-    <div th:replace="~{common/navbar :: top-nav}"></div>
-    <div class="main-container">
-        <header>
-        <h1>AI Todo</h1>
-        </header>
+<div th:replace="~{common/navbar :: top-nav}"></div>
 
-    <!-- 添加任务表单 -->
-    <div class="add-task-form">
-        <h2 class="form-title"><i class="fas fa-plus-circle"></i> 添加新任务</h2>
-        <form th:action="@{/task/add}" method="post" id="taskForm">
-            <div class="input-group">
-                <input type="text" name="title" placeholder="任务标题" required>
-                <input type="datetime-local" name="deadline" placeholder="截止时间">
-                <button type="submit">添加任务</button>
+<main class="workspace-container">
+    <header class="workspace-header">
+        <h1 class="page-title">工作台</h1>
+        <p class="page-subtitle">按状态聚焦你的任务，击破拖延症。</p>
+    </header>
+
+    <div class="task-board">
+        <nav class="folder-tabs">
+            <button class="tab-btn active" data-target="progress" onclick="switchTab('progress')">
+                <i class="fas fa-bullseye"></i> 进行中 <span class="tab-count" id="count-progress">0</span>
+            </button>
+            <button class="tab-btn" data-target="attention" onclick="switchTab('attention')">
+                <i class="fas fa-bolt"></i> 需关注 <span class="tab-count" id="count-attention">0</span>
+            </button>
+            <button class="tab-btn" data-target="archived" onclick="switchTab('archived')">
+                <i class="fas fa-archive"></i> 已归档 <span class="tab-count" id="count-archived">0</span>
+            </button>
+        </nav>
+
+        <div class="task-list" id="taskListContainer">
+            <div class="empty-state" id="emptyState">
+                <div class="empty-icon">🍃</div>
+                <p>这个文件夹空空如也</p>
             </div>
-            <p style="color: #7f8c8d; font-size: 0.9em; margin-top: 10px;">
-                <i class="fas fa-info-circle"></i> 提示：如果不设置截止时间，系统将自动设置为3天后
-            </p>
-        </form>
-    </div>
 
-    <!-- 任务列表 -->
-    <div class="task-list">
-        <div class="list-header">
-            <h2 class="list-title"><i class="fas fa-tasks"></i> 任务列表</h2>
-            <div class="stats">
-                <span th:text="'总计: ' + ${tasks != null ? tasks.size() : 0} + ' 个任务'">总计: 4 个任务</span>
-            </div>
-        </div>
+            <div th:each="task : ${tasks}"
+                 class="task-card"
+                 th:data-status="${task.status}"
+                 th:data-id="${task.id}"
+                 th:data-deadline="${task.deadline != null ? #temporals.format(task.deadline, 'yyyy-MM-dd HH:mm:ss') : ''}">
 
-        <!-- 空状态 -->
-        <div th:if="${tasks == null or tasks.empty}" class="empty-state">
-            <div class="empty-icon">📭</div>
-            <p>还没有任务，添加一个开始吧！</p>
-            <p style="font-size: 0.9em; margin-top: 10px;">点击上方表单创建你的第一个任务</p>
-        </div>
-
-        <!-- 任务项示例（静态数据，实际应从后端获取） -->
-        <div th:if="${tasks == null or tasks.empty}">
-            <!-- 示例任务1：正常 -->
-            <div class="task-item status-normal">
-                <div class="task-info">
-                    <div class="task-title">完成项目文档</div>
-                    <div class="task-meta">
-                        <span>创建: 2026-03-28 10:00</span>
-                        <span>截止: 2026-04-02 18:00</span>
-                        <span class="task-status">正常</span>
+                <div class="card-left">
+                    <i class="fas fa-circle-notch task-icon" th:if="${task.status != 1}"></i>
+                    <i class="fas fa-check-circle task-icon" th:if="${task.status == 1}" style="color: #10B981;"></i>
+                    <div>
+                        <div class="task-title" th:text="${task.title}" th:style="${task.status == 1 ? 'text-decoration: line-through; color: #9CA3AF;' : ''}">任务标题</div>
+                        <div class="task-meta">
+                            <span><i class="far fa-calendar-plus"></i> 创建: <span th:text="${#temporals.format(task.createdAt, 'MM-dd HH:mm')}"></span></span>
+                            <span th:if="${task.deadline != null}"><i class="far fa-clock"></i> 截止: <span th:text="${#temporals.format(task.deadline, 'MM-dd HH:mm')}"></span></span>
+                        </div>
                     </div>
                 </div>
-                <div class="task-actions">
-                    <button class="btn-complete">完成</button>
-                    <button class="btn-urgent">标记紧急</button>
-                    <button class="btn-delayed">标记拖延</button>
-                    <button class="btn-delete">删除</button>
-                </div>
-            </div>
 
-            <!-- 示例任务2：紧急 -->
-            <div class="task-item status-urgent">
-                <div class="task-info">
-                    <div class="task-title">学习Vue3框架</div>
-                    <div class="task-meta">
-                        <span>创建: 2026-03-29 14:30</span>
-                        <span>截止: 2026-03-31 23:59</span>
-                        <span class="task-status">紧急</span>
-                    </div>
-                </div>
-                <div class="task-actions">
-                    <button class="btn-complete">完成</button>
-                    <button class="btn-delayed">标记拖延</button>
-                    <button class="btn-delete">删除</button>
-                </div>
-            </div>
+                <div class="card-right">
+                    <span class="status-badge"
+                          th:classappend="${task.status == 0 ? 'badge-normal' : (task.status == 1 ? 'badge-done' : (task.status == 2 ? 'badge-delayed' : 'badge-urgent'))}"
+                          th:text="${task.status == 0 ? '正常' : (task.status == 1 ? '已完成' : (task.status == 2 ? '拖延' : '紧急'))}">
+                    </span>
 
-            <!-- 示例任务3：已完成 -->
-            <div class="task-item status-completed">
-                <div class="task-info">
-                    <div class="task-title">晨跑锻炼</div>
-                    <div class="task-meta">
-                        <span>创建: 2026-03-30 07:00</span>
-                        <span>截止: 2026-03-30 08:00</span>
-                        <span class="task-status">已完成</span>
-                    </div>
-                </div>
-                <div class="task-actions">
-                    <button class="btn-delete">删除</button>
-                </div>
-            </div>
+                    <div class="task-actions">
+                        <button th:if="${task.status != 1}" class="action-btn check" th:onclick="'completeTask(' + ${task.id} + ')'" title="完成">
+                            <i class="fas fa-check"></i>
+                        </button>
 
-            <!-- 示例任务4：拖延 -->
-            <div class="task-item status-delayed">
-                <div class="task-info">
-                    <div class="task-title">整理书桌</div>
-                    <div class="task-meta">
-                        <span>创建: 2026-03-25 09:00</span>
-                        <span>截止: 2026-03-27 17:00</span>
-                        <span class="task-status">拖延</span>
-                    </div>
-                </div>
-                <div class="task-actions">
-                    <button class="btn-complete">完成</button>
-                    <button class="btn-urgent">标记紧急</button>
-                    <button class="btn-delete">删除</button>
-                </div>
-            </div>
-        </div>
+                        <button th:if="${task.status == 0}" class="action-btn focus" th:data-task-title="${task.title}" onclick="enterFocusFlow(this)" title="一键进入心流">
+                            <i class="fas fa-headphones-alt"></i>
+                        </button>
 
-        <!-- 动态任务列表（当有后端数据时） -->
-        <div th:if="${tasks != null and !tasks.empty}">
-            <div th:each="task : ${tasks}" class="task-item"
-                 th:classappend="${task.status == 0 ? 'status-normal' : (task.status == 1 ? 'status-completed' : (task.status == 2 ? 'status-delayed' : 'status-urgent'))}">
-                <div class="task-info">
-                    <div class="task-title" th:text="${task.title}">任务标题</div>
-                    <div class="task-meta">
-                        <span th:text="'创建: ' + ${#temporals.format(task.createdAt, 'yyyy-MM-dd HH:mm')}">创建时间</span>
-                        <span th:if="${task.deadline != null}"
-                              th:text="'截止: ' + ${#temporals.format(task.deadline, 'yyyy-MM-dd HH:mm')}">截止时间</span>
-                        <span class="task-status"
-                              th:text="${task.status == 0 ? '正常' : (task.status == 1 ? '已完成' : (task.status == 2 ? '拖延' : '紧急'))}">状态</span>
+                        <button class="action-btn delete" th:onclick="'deleteTask(' + ${task.id} + ')'" title="删除">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
                     </div>
-                </div>
-                <div class="task-actions">
-                    <button th:if="${task.status != 1}" class="btn-complete"
-                            th:onclick="'completeTask(' + ${task.id} + ')'">完成</button>
-                    <button th:if="${task.status != 2}" class="btn-delayed"
-                            th:onclick="'markDelayed(' + ${task.id} + ')'">标记拖延</button>
-                    <button class="btn-delete" th:onclick="'deleteTask(' + ${task.id} + ')'">删除</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- AI提醒区域 -->
-    <div class="ai-warning">
-        <div class="ai-header">
-            <span class="ai-icon">🤖</span>
-            <h3>AI 智能提醒</h3>
+    <div class="sidebar">
+        <div class="side-card">
+            <h2 class="card-title"><i class="fas fa-plus-circle"></i> 快速添加</h2>
+            <form id="taskForm">
+                <div class="input-group">
+                    <input type="text" name="title" placeholder="要做点什么？" required autocomplete="off">
+                    <input type="datetime-local" name="deadline" placeholder="截止时间">
+                    <p style="font-size: 0.8rem; color: #9CA3AF; margin: 0 0 8px 4px;"><i class="fas fa-bolt"></i> 不填时间则默认 15 分钟后截止</p>
+                    <button type="submit">添加任务</button>
+                </div>
+            </form>
         </div>
-        <p class="ai-text" th:text="${aiWarning != null} ? ${aiWarning} :
-            '⏰ 你有1个紧急任务需要立即处理！拖延只会让问题变大，现在就开始行动吧！'">
-            ⏰ 你有1个紧急任务需要立即处理！拖延只会让问题变大，现在就开始行动吧！
-        </p>
-        <p class="ai-note">
-            <i class="fas fa-lightbulb"></i> 提示：AI提醒基于任务状态和截止时间智能生成，帮助你克服拖延症。
-        </p>
+
+        <div class="side-card ai-warning">
+            <div class="ai-header"><i class="fas fa-robot"></i> AI 分析建议</div>
+            <p class="ai-text" th:text="${aiWarning != null} ? ${aiWarning} : '你的状态非常棒！目前没有严重的拖延堆积，继续保持这种节奏。'"></p>
+        </div>
     </div>
+</main>
 
-    <!-- JavaScript交互 -->
-    <script>
-        // 模拟任务操作函数（实际应调用后端API）
-        function completeTask(taskId) {
-            if (confirm('标记任务为完成？')) {
-                fetch('/task/' + taskId + '/complete', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                })
-                .then(response => {
-                    if (response.ok) {
-                        alert('任务已完成！');
-                        location.reload();
-                    } else {
-                        alert('操作失败');
-                    }
-                })
-                .catch(error => console.error('Error:', error));
+<script>
+    // 🌟 开启结界：防止被其他插件污染
+    (function() {
+        'use strict';
+
+        const Toast = {
+            container: null,
+            init() {
+                if (!this.container) {
+                    this.container = document.createElement('div');
+                    this.container.className = 'toast-container';
+                    document.body.appendChild(this.container);
+                }
+            },
+            show(message, type = 'success') {
+                this.init();
+                const toast = document.createElement('div');
+                const icon = type === 'success' ? '<i class="fas fa-check-circle toast-icon"></i>' : '<i class="fas fa-exclamation-circle toast-icon"></i>';
+                toast.className = `modern-toast ${type}`;
+                toast.innerHTML = `${icon} <span>${message}</span>`;
+                this.container.appendChild(toast);
+                setTimeout(() => toast.classList.add('show'), 10);
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => toast.remove(), 400);
+                }, 3000);
             }
-        }
+        };
 
-        function markDelayed(taskId) {
-            if (confirm('标记任务为拖延？')) {
-                fetch('/task/' + taskId + '/delay', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                })
-                .then(response => {
-                    if (response.ok) {
-                        alert('任务已标记为拖延');
-                        location.reload();
-                    } else {
-                        alert('操作失败');
-                    }
-                })
-                .catch(error => console.error('Error:', error));
+        const ModernConfirm = {
+            show(title, desc, confirmText = '确定', isDanger = false) {
+                return new Promise((resolve) => {
+                    const overlay = document.createElement('div');
+                    overlay.className = 'modal-overlay';
+                    const btnClass = isDanger ? 'btn-danger' : 'btn-primary';
+                    overlay.innerHTML = `<div class="modern-modal"><div class="modal-title">${title}</div><div class="modal-desc">${desc}</div><div class="modal-actions"><button class="btn-cancel" id="modalCancelBtn">取消</button><button class="${btnClass}" id="modalConfirmBtn">${confirmText}</button></div></div>`;
+                    document.body.appendChild(overlay);
+                    setTimeout(() => overlay.classList.add('show'), 10);
+                    const close = (result) => {
+                        overlay.classList.remove('show');
+                        setTimeout(() => overlay.remove(), 300);
+                        resolve(result);
+                    };
+                    overlay.querySelector('#modalCancelBtn').onclick = () => close(false);
+                    overlay.querySelector('#modalConfirmBtn').onclick = () => close(true);
+                });
             }
-        }
+        };
 
-        function deleteTask(taskId) {
-            if (confirm('确定删除这个任务吗？')) {
-                fetch('/task/' + taskId, {
-                    method: 'DELETE'
-                })
-                .then(response => {
-                    if (response.ok) {
-                        alert('任务已删除');
-                        location.reload();
-                    } else {
-                        alert('删除失败');
-                    }
-                })
-                .catch(error => console.error('Error:', error));
-            }
-        }
+        // 🌟 全局暴露的 HTML 点击事件
+        window.switchTab = function(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            const targetBtn = document.querySelector(`[data-target="${tabId}"]`);
+            if (targetBtn) targetBtn.classList.add('active');
 
-        // 表单提交处理（示例）
-        document.getElementById('taskForm')?.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-            const taskData = {
-                title: formData.get('title'),
-                deadline: formData.get('deadline') || null
-            };
+            let visibleCount = 0;
+            document.querySelectorAll('.task-card').forEach(card => {
+                const status = parseInt(card.getAttribute('data-status'));
+                let match = false;
 
-            fetch('/task/add', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(taskData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert('任务添加成功！');
-                location.reload();
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('添加失败');
+                if (tabId === 'progress' && status === 0) match = true;
+                if (tabId === 'attention' && (status === 2 || status === 3)) match = true;
+                if (tabId === 'archived' && status === 1) match = true;
+
+                if (match) {
+                    card.style.display = 'flex';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
             });
+
+            const emptyState = document.getElementById('emptyState');
+            if (emptyState) emptyState.style.display = visibleCount === 0 ? 'block' : 'none';
+        };
+
+        window.completeTask = function(taskId) {
+            fetch('/task/' + taskId + '/complete', { method: 'POST' })
+                .then(res => {
+                    if (res.ok) {
+                        Toast.show('任务已完成！积分 +5', 'success');
+                        setTimeout(() => location.reload(), 1000);
+                    } else Toast.show('操作失败', 'error');
+                });
+        };
+
+        window.deleteTask = function(taskId) {
+            ModernConfirm.show('永久删除任务？', '删除后该任务将无法恢复。', '确认删除', true)
+                .then(confirmed => {
+                    if (confirmed) {
+                        fetch('/task/' + taskId, { method: 'DELETE' })
+                            .then(res => {
+                                if (res.ok) {
+                                    Toast.show('任务已彻底删除', 'success');
+                                    setTimeout(() => location.reload(), 1000);
+                                } else Toast.show('删除失败', 'error');
+                            });
+                    }
+                });
+        };
+
+        // 🌟 安全的心流跳转逻辑
+        window.enterFocusFlow = function(btnElement) {
+            const title = btnElement.getAttribute('data-task-title') || '专注任务';
+            window.location.href = '/focus-flow?task=' + encodeURIComponent(title);
+        };
+
+        function updateTabCounts() {
+            let pCount = 0, aCount = 0, dCount = 0;
+            document.querySelectorAll('.task-card').forEach(card => {
+                const s = parseInt(card.getAttribute('data-status'));
+                if (s === 0) pCount++;
+                else if (s === 2 || s === 3) aCount++;
+                else if (s === 1) dCount++;
+            });
+
+            const pEl = document.getElementById('count-progress');
+            const aEl = document.getElementById('count-attention');
+            const dEl = document.getElementById('count-archived');
+
+            if (pEl) pEl.innerText = pCount;
+            if (aEl) aEl.innerText = aCount;
+            if (dEl) dEl.innerText = dCount;
+        }
+
+        function startDeadlineScanner() {
+            setInterval(() => {
+                const now = new Date();
+                let hasNewDelayed = false;
+
+                document.querySelectorAll('.task-card').forEach(card => {
+                    const status = parseInt(card.getAttribute('data-status'));
+                    const deadlineStr = card.getAttribute('data-deadline');
+
+                    if (status === 0 && deadlineStr) {
+                        const safeDateStr = deadlineStr.replace(' ', 'T');
+                        const deadline = new Date(safeDateStr);
+
+                        if (!isNaN(deadline.getTime()) && now > deadline) {
+                            const taskId = card.getAttribute('data-id');
+                            const titleEl = card.querySelector('.task-title');
+                            const title = titleEl ? titleEl.innerText : '未知任务';
+
+                            Toast.show(`🚨 任务超时：【${title}】已自动转入拖延状态！`, 'error');
+
+                            card.setAttribute('data-status', '2');
+                            const badge = card.querySelector('.status-badge');
+                            if (badge) {
+                                badge.className = 'status-badge badge-delayed';
+                                badge.innerText = '拖延';
+                            }
+
+                            const focusBtn = card.querySelector('.action-btn.focus');
+                            if (focusBtn) focusBtn.style.display = 'none';
+
+                            fetch('/task/' + taskId + '/delay', { method: 'POST' }).catch(() => {});
+                            hasNewDelayed = true;
+                        }
+                    }
+                });
+
+                if (hasNewDelayed) {
+                    updateTabCounts();
+                    const currentActiveTab = document.querySelector('.tab-btn.active');
+                    if (currentActiveTab) window.switchTab(currentActiveTab.getAttribute('data-target'));
+                }
+            }, 5000);
+        }
+
+        const form = document.getElementById('taskForm');
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                let deadlineValue = formData.get('deadline');
+
+                if (!deadlineValue) {
+                    const now = new Date();
+                    now.setMinutes(now.getMinutes() + 15);
+                    const tzOffset = now.getTimezoneOffset() * 60000;
+                    deadlineValue = new Date(now - tzOffset).toISOString().slice(0, 16);
+                }
+
+                const taskData = { title: formData.get('title'), deadline: deadlineValue };
+                const submitBtn = this.querySelector('button[type="submit"]');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 添加中...';
+                submitBtn.disabled = true;
+
+                fetch('/task/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(taskData)
+                })
+                    .then(response => {
+                        if (response.ok) {
+                            Toast.show('新任务添加成功！', 'success');
+                            setTimeout(() => location.reload(), 1000);
+                        } else {
+                            Toast.show('添加失败，请重试', 'error');
+                            submitBtn.innerHTML = originalText;
+                            submitBtn.disabled = false;
+                        }
+                    }).catch(() => {
+                    Toast.show('网络错误', 'error');
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                });
+            });
+        }
+
+        // 页面加载完成后触发
+        document.addEventListener('DOMContentLoaded', () => {
+            updateTabCounts();
+            window.switchTab('progress');
+            startDeadlineScanner();
         });
 
-        console.log('AI Todo Thymeleaf 页面已加载');
-    </script>
-    </div>
+    })(); // 结界闭合
+</script>
+
+<div th:replace="~{common/ai-assistant :: ai-assistant}"></div>
 </body>
 </html>

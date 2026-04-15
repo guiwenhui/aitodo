@@ -18,30 +18,15 @@ import java.util.List;
 @RequestMapping("/stats")
 public class LeaderboardController {
 
-    private final LeaderboardService leaderboardService;
+        private final LeaderboardService leaderboardService;
 
-    public LeaderboardController(LeaderboardService leaderboardService) {
-        this.leaderboardService = leaderboardService;
-    }
+        public LeaderboardController(LeaderboardService leaderboardService) {
+            this.leaderboardService = leaderboardService;
+        }
 
-    /**
-     * 获取积分排行榜
-     * @param limit 限制返回数量，可选，默认为0表示返回所有用户
-     * @return 排行榜数据
-     */
-    @GetMapping("/leaderboard")
-    public Result getLeaderboard(@RequestParam(value = "limit", defaultValue = "0") int limit) {
-        List<LeaderboardEntryDTO> leaderboard = leaderboardService.getLeaderboard(limit);
-        return Result.success(leaderboard);
-    }
-
-    /**
-     * 获取完整排行榜（所有用户）
-     * @return 完整排行榜数据
-     */
-    @GetMapping("/leaderboard/full")
-    public Result getFullLeaderboard() {
-        List<LeaderboardEntryDTO> leaderboard = leaderboardService.getFullLeaderboard();
-        return Result.success(leaderboard);
-    }
+        @GetMapping("/leaderboard")
+        public Result<?> getLeaderboard() {
+            // 🌟 绝杀：必须确保这里调用的是 getLeaderboard，而不是其他的旧方法！
+            return Result.success(leaderboardService.getLeaderboard(10));
+        }
 }

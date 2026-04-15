@@ -1,6 +1,9 @@
 package com.example.aitodo.controller;
 
+import com.example.aitodo.entity.User;
 import com.example.aitodo.service.TaskService;
+import com.example.aitodo.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -176,5 +179,27 @@ public class WebController {
     public String logout(HttpSession session) {
         session.invalidate();
         return "redirect:/";
+    }
+    /**
+     * 心流舱页面 (Vue项目入口)
+     */
+    @GetMapping("/focus-flow")
+    public String focusFlow(Model model, HttpSession session) {
+        // 1. 检查用户是否登录
+        Long userId = (Long) session.getAttribute("userId");
+        String username = (String) session.getAttribute("username");
+
+        if (userId == null) {
+            // 未登录，重定向到登录页面
+            return "redirect:/login";
+        }
+
+        // 2. 传递公共导航栏必须的参数，防止 Thymeleaf 报错
+        model.addAttribute("pageTitle", "心流舱 - AI Todo");
+        model.addAttribute("loggedIn", true);
+        model.addAttribute("username", username);
+
+        // 3. 返回你创建的 focus-flow.html 模板
+        return "focus-flow";
     }
 }

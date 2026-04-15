@@ -1,6 +1,7 @@
 /Users/guiwenhui/Documents/workplace/sheji/ai-todo-procrastination-cure/src/main/java/com/example/aitodo/AiTodoApplication.java
 /Users/guiwenhui/Documents/workplace/sheji/ai-todo-procrastination-cure/src/main/java/com/example/aitodo/common/Result.java
 /Users/guiwenhui/Documents/workplace/sheji/ai-todo-procrastination-cure/src/main/java/com/example/aitodo/config/CorsConfig.java
+/Users/guiwenhui/Documents/workplace/sheji/ai-todo-procrastination-cure/src/main/java/com/example/aitodo/controller/AgentController.java
 /Users/guiwenhui/Documents/workplace/sheji/ai-todo-procrastination-cure/src/main/java/com/example/aitodo/controller/HealthController.java
 /Users/guiwenhui/Documents/workplace/sheji/ai-todo-procrastination-cure/src/main/java/com/example/aitodo/controller/LeaderboardController.java
 /Users/guiwenhui/Documents/workplace/sheji/ai-todo-procrastination-cure/src/main/java/com/example/aitodo/controller/StatsController.java
@@ -9,7 +10,9 @@
 /Users/guiwenhui/Documents/workplace/sheji/ai-todo-procrastination-cure/src/main/java/com/example/aitodo/controller/UserController.java
 /Users/guiwenhui/Documents/workplace/sheji/ai-todo-procrastination-cure/src/main/java/com/example/aitodo/controller/VisualizationController.java
 /Users/guiwenhui/Documents/workplace/sheji/ai-todo-procrastination-cure/src/main/java/com/example/aitodo/controller/WebController.java
+/Users/guiwenhui/Documents/workplace/sheji/ai-todo-procrastination-cure/src/main/java/com/example/aitodo/dto/AgentRequestDTO.java
 /Users/guiwenhui/Documents/workplace/sheji/ai-todo-procrastination-cure/src/main/java/com/example/aitodo/dto/LeaderboardEntryDTO.java
+/Users/guiwenhui/Documents/workplace/sheji/ai-todo-procrastination-cure/src/main/java/com/example/aitodo/dto/TaskDTO.java
 /Users/guiwenhui/Documents/workplace/sheji/ai-todo-procrastination-cure/src/main/java/com/example/aitodo/dto/VisualizationStatsDTO.java
 /Users/guiwenhui/Documents/workplace/sheji/ai-todo-procrastination-cure/src/main/java/com/example/aitodo/entity/Achievement.java
 /Users/guiwenhui/Documents/workplace/sheji/ai-todo-procrastination-cure/src/main/java/com/example/aitodo/entity/Task.java
@@ -24,11 +27,13 @@
 /Users/guiwenhui/Documents/workplace/sheji/ai-todo-procrastination-cure/src/main/java/com/example/aitodo/mapper/UserPointsMapper.java
 /Users/guiwenhui/Documents/workplace/sheji/ai-todo-procrastination-cure/src/main/java/com/example/aitodo/mapper/UserStatsMapper.java
 /Users/guiwenhui/Documents/workplace/sheji/ai-todo-procrastination-cure/src/main/java/com/example/aitodo/service/LeaderboardService.java
+/Users/guiwenhui/Documents/workplace/sheji/ai-todo-procrastination-cure/src/main/java/com/example/aitodo/service/LlmService.java
 /Users/guiwenhui/Documents/workplace/sheji/ai-todo-procrastination-cure/src/main/java/com/example/aitodo/service/TaskLogService.java
 /Users/guiwenhui/Documents/workplace/sheji/ai-todo-procrastination-cure/src/main/java/com/example/aitodo/service/TaskService.java
 /Users/guiwenhui/Documents/workplace/sheji/ai-todo-procrastination-cure/src/main/java/com/example/aitodo/service/UserService.java
 /Users/guiwenhui/Documents/workplace/sheji/ai-todo-procrastination-cure/src/main/java/com/example/aitodo/service/VisualizationService.java
 /Users/guiwenhui/Documents/workplace/sheji/ai-todo-procrastination-cure/src/main/java/com/example/aitodo/service/impl/LeaderboardServiceImpl.java
+/Users/guiwenhui/Documents/workplace/sheji/ai-todo-procrastination-cure/src/main/java/com/example/aitodo/service/impl/LlmServiceImpl.java
 /Users/guiwenhui/Documents/workplace/sheji/ai-todo-procrastination-cure/src/main/java/com/example/aitodo/service/impl/TaskLogServiceImpl.java
 /Users/guiwenhui/Documents/workplace/sheji/ai-todo-procrastination-cure/src/main/java/com/example/aitodo/service/impl/TaskServiceImpl.java
 /Users/guiwenhui/Documents/workplace/sheji/ai-todo-procrastination-cure/src/main/java/com/example/aitodo/service/impl/UserServiceImpl.java

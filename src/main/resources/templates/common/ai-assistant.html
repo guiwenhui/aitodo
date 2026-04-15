@@ -1,0 +1,566 @@
+<!-- ====================================================================== -->
+<!--  AI 任务助手 —— 全局悬浮组件 (Thymeleaf Fragment)                        -->
+<!--  使用方式：在任意 Thymeleaf 页面中引入                                     -->
+<!--  <div th:replace="~{common/ai-assistant :: ai-assistant}"></div>         -->
+<!-- ====================================================================== -->
+<div th:fragment="ai-assistant">
+
+    <!-- ======================== 样式定义 ======================== -->
+    <style>
+        /* ============================================================
+         *  AI 任务助手 - 悬浮组件样式
+         *  主色调：#4a6fa5（优雅蓝），辅助色：#f0f4f8（浅灰蓝背景）
+         * ============================================================ */
+
+        /* ---------- 悬浮按钮 ---------- */
+        .ai-fab {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4a6fa5 0%, #3a5a8c 100%);
+            color: #ffffff;
+            border: none;
+            cursor: pointer;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 20px rgba(74, 111, 165, 0.4);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 9999;
+            outline: none;
+        }
+
+        .ai-fab:hover {
+            transform: scale(1.1) translateY(-2px);
+            box-shadow: 0 8px 28px rgba(74, 111, 165, 0.55);
+        }
+
+        .ai-fab:active {
+            transform: scale(0.95);
+        }
+
+        /* 按钮脉冲动画（吸引用户注意） */
+        .ai-fab::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: rgba(74, 111, 165, 0.3);
+            animation: ai-pulse 2s infinite;
+            z-index: -1;
+        }
+
+        @keyframes ai-pulse {
+            0% { transform: scale(1); opacity: 0.6; }
+            70% { transform: scale(1.5); opacity: 0; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+
+        /* ---------- 对话面板 ---------- */
+        .ai-panel {
+            position: fixed;
+            bottom: 100px;
+            right: 30px;
+            width: 400px;
+            max-width: calc(100vw - 40px);
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.06);
+            z-index: 9998;
+            overflow: hidden;
+            /* 默认隐藏 */
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px) scale(0.95);
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .ai-panel.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+        }
+
+        /* ---------- 面板头部 ---------- */
+        .ai-panel-header {
+            background: linear-gradient(135deg, #4a6fa5 0%, #3a5a8c 100%);
+            color: #ffffff;
+            padding: 20px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .ai-panel-header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .ai-panel-header-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .ai-panel-title {
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        .ai-panel-subtitle {
+            font-size: 12px;
+            opacity: 0.85;
+            margin-top: 2px;
+        }
+
+        .ai-panel-close {
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            color: #ffffff;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .ai-panel-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* ---------- 面板内容区 ---------- */
+        .ai-panel-body {
+            padding: 24px;
+        }
+
+        /* 提示语 */
+        .ai-tip {
+            background: #f0f4f8;
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: #5a6b7f;
+            line-height: 1.6;
+        }
+
+        .ai-tip-icon {
+            margin-right: 6px;
+        }
+
+        /* 示例标签 */
+        .ai-examples {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .ai-example-tag {
+            background: #e8eef6;
+            color: #4a6fa5;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .ai-example-tag:hover {
+            background: #4a6fa5;
+            color: #ffffff;
+            transform: translateY(-1px);
+        }
+
+        /* ---------- 输入区域 ---------- */
+        .ai-input-wrapper {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .ai-input {
+            flex: 1;
+            padding: 14px 18px;
+            border: 2px solid #e2e8f0;
+            border-radius: 14px;
+            font-size: 14px;
+            color: #334155;
+            background: #f8fafc;
+            transition: all 0.25s;
+            outline: none;
+            font-family: inherit;
+        }
+
+        .ai-input:focus {
+            border-color: #4a6fa5;
+            background: #ffffff;
+            box-shadow: 0 0 0 4px rgba(74, 111, 165, 0.1);
+        }
+
+        .ai-input::placeholder {
+            color: #94a3b8;
+        }
+
+        .ai-input:disabled {
+            background: #f1f5f9;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .ai-send-btn {
+            padding: 14px 22px;
+            background: linear-gradient(135deg, #4a6fa5 0%, #3a5a8c 100%);
+            color: #ffffff;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.25s;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ai-send-btn:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(74, 111, 165, 0.4);
+        }
+
+        .ai-send-btn:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* ---------- Loading 动画 ---------- */
+        .ai-loading-dots {
+            display: inline-flex;
+            gap: 3px;
+            align-items: center;
+        }
+
+        .ai-loading-dots span {
+            width: 5px;
+            height: 5px;
+            background: #ffffff;
+            border-radius: 50%;
+            animation: ai-dot-bounce 1.4s infinite ease-in-out both;
+        }
+
+        .ai-loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+        .ai-loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+        .ai-loading-dots span:nth-child(3) { animation-delay: 0s; }
+
+        @keyframes ai-dot-bounce {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+
+        /* ---------- Toast 通知 ---------- */
+        .ai-toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-100px);
+            padding: 14px 28px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #ffffff;
+            z-index: 10000;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+            max-width: 90vw;
+            text-align: center;
+        }
+
+        .ai-toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .ai-toast.success {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .ai-toast.error {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        .ai-toast.info {
+            background: linear-gradient(135deg, #4a6fa5, #3a5a8c);
+        }
+
+        /* ---------- 响应式适配 ---------- */
+        @media (max-width: 480px) {
+            .ai-panel {
+                right: 10px;
+                bottom: 90px;
+                width: calc(100vw - 20px);
+                border-radius: 16px;
+            }
+
+            .ai-fab {
+                bottom: 20px;
+                right: 20px;
+                width: 54px;
+                height: 54px;
+                font-size: 20px;
+            }
+
+            .ai-panel-body {
+                padding: 18px;
+            }
+        }
+    </style>
+
+    <!-- ======================== HTML 结构 ======================== -->
+
+    <!-- 悬浮按钮 -->
+    <button class="ai-fab" id="aiFab" onclick="toggleAiPanel()" title="AI 任务助手">
+        <i class="fas fa-robot"></i>
+    </button>
+
+    <!-- 对话面板 -->
+    <div class="ai-panel" id="aiPanel">
+        <!-- 头部 -->
+        <div class="ai-panel-header">
+            <div class="ai-panel-header-left">
+                <div class="ai-panel-header-icon">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div>
+                    <div class="ai-panel-title">AI 任务助手</div>
+                    <div class="ai-panel-subtitle">用一句话快速创建任务</div>
+                </div>
+            </div>
+            <button class="ai-panel-close" onclick="toggleAiPanel()" title="关闭">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- 内容区 -->
+        <div class="ai-panel-body">
+            <!-- 使用提示 -->
+            <div class="ai-tip">
+                <span class="ai-tip-icon">💡</span>
+                输入你的任务描述，AI 会自动提取任务并设置截止时间。支持一次创建多个任务！
+            </div>
+
+            <!-- 快捷示例标签 -->
+            <div class="ai-examples">
+                <button class="ai-example-tag" onclick="fillExample('明天下午三点前完成项目报告')">📝 明天写报告</button>
+                <button class="ai-example-tag" onclick="fillExample('今天晚上八点前跑步，九点前洗澡')">🏃 今晚运动</button>
+                <button class="ai-example-tag" onclick="fillExample('后天上午十点开会，下午两点交周报')">📅 后天安排</button>
+            </div>
+
+            <!-- 输入区 -->
+            <div class="ai-input-wrapper">
+                <input
+                    type="text"
+                    class="ai-input"
+                    id="aiInput"
+                    placeholder="例如：今天八点前洗完澡，九点前写完作业"
+                    maxlength="500"
+                    onkeydown="handleAiInputKeydown(event)"
+                >
+                <button class="ai-send-btn" id="aiSendBtn" onclick="sendAiRequest()">
+                    <i class="fas fa-paper-plane" id="aiSendIcon"></i>
+                    <span id="aiSendText">发送</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast 通知容器 -->
+    <div class="ai-toast" id="aiToast"></div>
+
+    <!-- ======================== 交互逻辑 ======================== -->
+    <script>
+        /**
+         * ========================================
+         *  AI 任务助手 - 前端交互逻辑
+         *  使用原生 JavaScript + Fetch API
+         * ========================================
+         */
+
+        // ==================== 面板展开/收折 ====================
+
+        /**
+         * 切换 AI 面板的显示/隐藏状态
+         */
+        function toggleAiPanel() {
+            const panel = document.getElementById('aiPanel');
+            const fab = document.getElementById('aiFab');
+
+            panel.classList.toggle('active');
+
+            // 面板展开时，自动聚焦输入框
+            if (panel.classList.contains('active')) {
+                setTimeout(() => {
+                    document.getElementById('aiInput').focus();
+                }, 350); // 等待动画完成后聚焦
+            }
+        }
+
+        // ==================== 快捷示例填充 ====================
+
+        /**
+         * 点击示例标签时，自动填充到输入框
+         * @param {string} text - 示例文本
+         */
+        function fillExample(text) {
+            const input = document.getElementById('aiInput');
+            input.value = text;
+            input.focus();
+        }
+
+        // ==================== 键盘事件处理 ====================
+
+        /**
+         * 监听输入框键盘事件，Enter 键发送请求
+         * @param {KeyboardEvent} event
+         */
+        function handleAiInputKeydown(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendAiRequest();
+            }
+        }
+
+        // ==================== 核心：发送 AI 请求 ====================
+
+        /**
+         * 发送自然语言任务创建请求到后端
+         * 流程：校验输入 → 设置 Loading 状态 → Fetch 调用 → 处理结果
+         */
+        function sendAiRequest() {
+            const input = document.getElementById('aiInput');
+            const sendBtn = document.getElementById('aiSendBtn');
+            const sendIcon = document.getElementById('aiSendIcon');
+            const sendText = document.getElementById('aiSendText');
+            const userInput = input.value.trim();
+
+            // ---- 1. 校验输入 ----
+            if (!userInput) {
+                showAiToast('请输入任务描述', 'info');
+                input.focus();
+                return;
+            }
+
+            // ---- 2. 设置 Loading 状态（防止重复提交） ----
+            input.disabled = true;
+            sendBtn.disabled = true;
+            sendIcon.className = '';  // 移除原有图标
+            sendText.innerHTML = 'AI 思考中 <span class="ai-loading-dots"><span></span><span></span><span></span></span>';
+
+            // ---- 3. 发送请求 ----
+            fetch('/api/agent/create-tasks', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ userInput: userInput })
+            })
+            .then(response => response.json())
+            .then(result => {
+                // ---- 4. 处理响应 ----
+                if (result.code === 200) {
+                    // 成功：显示成功提示并刷新页面
+                    showAiToast('🎉 ' + result.msg, 'success');
+                    // 延迟刷新，让用户看到 Toast
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                } else if (result.code === 401) {
+                    // 未登录
+                    showAiToast('🔒 ' + result.msg, 'error');
+                    resetAiForm(input, sendBtn, sendIcon, sendText);
+                } else {
+                    // 其他错误
+                    showAiToast('⚠️ ' + result.msg, 'error');
+                    resetAiForm(input, sendBtn, sendIcon, sendText);
+                }
+            })
+            .catch(error => {
+                // ---- 5. 网络错误处理 ----
+                console.error('AI 请求失败：', error);
+                showAiToast('❌ 网络异常，请检查网络后重试', 'error');
+                resetAiForm(input, sendBtn, sendIcon, sendText);
+            });
+        }
+
+        // ==================== 辅助函数 ====================
+
+        /**
+         * 重置表单到初始状态
+         */
+        function resetAiForm(input, sendBtn, sendIcon, sendText) {
+            input.disabled = false;
+            sendBtn.disabled = false;
+            sendIcon.className = 'fas fa-paper-plane';
+            sendText.textContent = '发送';
+            input.focus();
+        }
+
+        /**
+         * 显示自定义 Toast 通知
+         * @param {string} message - 通知内容
+         * @param {string} type - 类型：'success' | 'error' | 'info'
+         */
+        function showAiToast(message, type) {
+            const toast = document.getElementById('aiToast');
+            toast.textContent = message;
+            toast.className = 'ai-toast ' + type;
+
+            // 触发重排以重启动画
+            void toast.offsetWidth;
+
+            toast.classList.add('show');
+
+            // 自动隐藏
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // ==================== 点击面板外部关闭 ====================
+
+        document.addEventListener('click', function(event) {
+            const panel = document.getElementById('aiPanel');
+            const fab = document.getElementById('aiFab');
+
+            // 如果面板已展开，且点击区域不在面板和按钮内，则关闭面板
+            if (panel.classList.contains('active') &&
+                !panel.contains(event.target) &&
+                !fab.contains(event.target)) {
+                panel.classList.remove('active');
+            }
+        });
+
+        console.log('🤖 AI 任务助手组件已加载');
+    </script>
+</div>

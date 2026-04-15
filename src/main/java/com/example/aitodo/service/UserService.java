@@ -43,6 +43,7 @@ public interface UserService {
 
     /**
      * Get all users
+     *
      * @return list of all users
      */
     List<User> getAllUsers();

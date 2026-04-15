@@ -30,7 +30,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(item, index) in leaderboard" :key="item.rank" :class="{'top-three': index < 3}" :style="{ animationDelay: `${index * 0.1}s` }">
+          <tr v-for="(item, index) in leaderboard" :key="item.userId" :class="{'top-three': index < 3}" :style="{ animationDelay: `${index * 0.1}s` }">
               <td class="rank-cell">
                 <div class="rank-badge" :class="`rank-${index + 1}`">
                   <span v-if="index === 0">🏆</span>
@@ -83,7 +83,27 @@ const fetchLeaderboard = async () => {
   try {
     error.value = ''
     const response = await axios.get('/stats/leaderboard')
-    leaderboard.value = response.data.data || []
+    let rawData = response.data.data || []
+
+    // 🌟 终极必杀技：前端强制兜底双重排序！
+    // 不管后端怎么排的，我们在这里彻底接管：优先比等级(level)，等级相同比积分(points)
+    rawData.sort((a, b) => {
+      // 1. 先比等级 (降序：b - a)
+      if (b.level !== a.level) {
+        return b.level - a.level
+      }
+      // 2. 如果等级一样，再比积分 (降序)
+      return b.points - a.points
+    })
+
+    // 🌟 重新洗牌后，强制覆盖排名 (rank)，确保奖杯图标对号入座
+    leaderboard.value = rawData.map((item, index) => {
+      return {
+        ...item,
+        rank: index + 1 // 第一名就是 1，第二名就是 2...
+      }
+    })
+
   } catch (err) {
     if (leaderboard.value.length === 0) {
       error.value = '加载排行榜数据失败: ' + (err.message || '未知错误')
