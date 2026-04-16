@@ -26,4 +26,7 @@ public interface UserMapper {
 
     @Select("SELECT * FROM users WHERE username=#{username}")
     User selectByUsername(String username);
+
+    @Update("UPDATE users SET avatar_url=#{avatarUrl} WHERE id=#{id}")
+    int updateAvatarUrl(@Param("id") Long id, @Param("avatarUrl") String avatarUrl);
 }

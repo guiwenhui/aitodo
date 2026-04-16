@@ -18,6 +18,7 @@ com/example/aitodo/service/impl/TaskLogServiceImpl.class
 com/example/aitodo/controller/AgentController$1.class
 com/example/aitodo/dto/TaskDTO.class
 com/example/aitodo/common/Result.class
+com/example/aitodo/config/WebMvcConfig.class
 com/example/aitodo/service/impl/LlmServiceImpl.class
 com/example/aitodo/service/VisualizationService.class
 com/example/aitodo/config/CorsConfig.class

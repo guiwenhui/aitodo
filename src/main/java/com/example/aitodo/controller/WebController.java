@@ -32,8 +32,8 @@ public class WebController {
         Long userId = (Long) session.getAttribute("userId");
         if (userId != null) {
             model.addAttribute("loggedIn", true);
-            // 你的 session 里存的是用户名还是对象？这里假设存了 username
             model.addAttribute("username", session.getAttribute("username"));
+            model.addAttribute("avatarUrl", session.getAttribute("avatarUrl"));
             // 已登录，显示 vue-home
             return "vue-home";
         } else {
@@ -64,6 +64,7 @@ public class WebController {
         model.addAttribute("aiWarning", "⏰ 你有1个紧急任务需要立即处理！拖延只会让问题变大，现在就开始行动吧！");
         model.addAttribute("loggedIn", true);
         model.addAttribute("username", username);
+        model.addAttribute("avatarUrl", session.getAttribute("avatarUrl"));
         return "tasks";
     }
 
@@ -92,6 +93,7 @@ public class WebController {
         model.addAttribute("pageTitle", "AI 提醒 - 拖延症治疗器");
         model.addAttribute("loggedIn", true);
         model.addAttribute("username", username);
+        model.addAttribute("avatarUrl", session.getAttribute("avatarUrl"));
         return "ai-warnings";
     }
 
@@ -115,6 +117,7 @@ public class WebController {
         // 🌟 补充导航栏需要的用户信息
         model.addAttribute("loggedIn", true);
         model.addAttribute("username", session.getAttribute("username"));
+        model.addAttribute("avatarUrl", session.getAttribute("avatarUrl"));
 
         // 🌟 直接返回模板名称，让 Spring Boot 去 templates 文件夹下找
         return "leaderboard";
@@ -131,6 +134,7 @@ public class WebController {
             // 已登录
             model.addAttribute("loggedIn", true);
             model.addAttribute("username", username);
+            model.addAttribute("avatarUrl", session.getAttribute("avatarUrl"));
         } else {
             // 未登录
             model.addAttribute("loggedIn", false);
@@ -198,6 +202,7 @@ public class WebController {
         model.addAttribute("pageTitle", "心流舱 - AI Todo");
         model.addAttribute("loggedIn", true);
         model.addAttribute("username", username);
+        model.addAttribute("avatarUrl", session.getAttribute("avatarUrl"));
 
         // 3. 返回你创建的 focus-flow.html 模板
         return "focus-flow";

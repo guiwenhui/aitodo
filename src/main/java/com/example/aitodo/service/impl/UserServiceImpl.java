@@ -117,4 +117,9 @@ public class UserServiceImpl implements UserService {
     public boolean checkUsernameExists(String username) {
         return userMapper.selectByUsername(username) != null;
     }
+
+    @Override
+    public void updateAvatarUrl(Long userId, String avatarUrl) {
+        userMapper.updateAvatarUrl(userId, avatarUrl);
+    }
 }

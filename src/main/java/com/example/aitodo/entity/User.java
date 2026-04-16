@@ -6,6 +6,7 @@ public class User {
     private Long id;
     private String username;
     private String password;
+    private String avatarUrl;
     private LocalDateTime createdAt;
 
     public User() {
@@ -54,5 +55,13 @@ public class User {
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
+
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
     }
 }

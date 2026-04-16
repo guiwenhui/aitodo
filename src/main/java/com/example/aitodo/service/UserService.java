@@ -54,4 +54,11 @@ public interface UserService {
      * @return true if exists
      */
     boolean checkUsernameExists(String username);
+
+    /**
+     * Update user avatar URL
+     * @param userId user id
+     * @param avatarUrl new avatar URL
+     */
+    void updateAvatarUrl(Long userId, String avatarUrl);
 }
