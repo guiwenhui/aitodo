@@ -44,21 +44,6 @@
             display: block;
         }
 
-        .pf-avatar-placeholder {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #fff;
-            font-size: 15px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            letter-spacing: 0;
-            user-select: none;
-        }
-
         /* ===== Tooltip ===== */
         .pf-tooltip {
             position: absolute;
@@ -121,11 +106,9 @@
             flex-shrink: 0;
         }
 
-        .pf-dropdown-avatar .pf-avatar-img,
-        .pf-dropdown-avatar .pf-avatar-placeholder {
+        .pf-dropdown-avatar .pf-avatar-img {
             width: 40px;
             height: 40px;
-            font-size: 17px;
         }
 
         .pf-dropdown-name {
@@ -190,13 +173,13 @@
             background: #fef2f2;
         }
 
-        /* ===== Upload Modal ===== */
+        /* ===== Upload Modal — 严格居中 ===== */
         .pf-modal-overlay {
             position: fixed;
             top: 0;
             left: 0;
-            right: 0;
-            bottom: 0;
+            width: 100%;
+            height: 100%;
             background: rgba(0, 0, 0, 0.3);
             backdrop-filter: blur(6px);
             -webkit-backdrop-filter: blur(6px);
@@ -215,18 +198,24 @@
         }
 
         .pf-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.95);
             background: #fff;
             border-radius: 16px;
             width: 400px;
             max-width: 90vw;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
-            transform: scale(0.95) translateY(10px);
-            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
             overflow: hidden;
+            opacity: 0;
+            z-index: 2001;
         }
 
         .pf-modal-overlay.pf-show .pf-modal {
-            transform: scale(1) translateY(0);
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
         }
 
         .pf-modal-header {
@@ -388,7 +377,6 @@
             to { transform: rotate(360deg); }
         }
 
-        /* ===== Login link styling ===== */
         .pf-login-link {
             display: flex;
             align-items: center;
@@ -412,12 +400,13 @@
             <li th:if="${loggedIn}">
                 <div class="pf-profile-area">
                     <button class="pf-trigger" id="pfTrigger" type="button" aria-label="用户菜单">
-                        <!-- 有头像 -->
-                        <img th:if="${avatarUrl != null}" th:src="${avatarUrl}"
+                        <!-- 头像：优先使用上传头像，否则用 Dicebear 默认头像 -->
+                        <img th:if="${avatarUrl != null}"
+                             th:src="${avatarUrl}"
                              alt="头像" class="pf-avatar-img" />
-                        <!-- 无头像：首字母占位 -->
-                        <span th:unless="${avatarUrl != null}" class="pf-avatar-placeholder"
-                              th:text="${username != null ? username.substring(0,1).toUpperCase() : 'U'}">U</span>
+                        <img th:unless="${avatarUrl != null}"
+                             th:src="'https://api.dicebear.com/7.x/notionists/svg?seed=' + ${username}"
+                             alt="头像" class="pf-avatar-img pf-default-avatar" />
                         <!-- Tooltip -->
                         <span class="pf-tooltip" th:text="${username}">用户名</span>
                     </button>
@@ -426,10 +415,12 @@
                     <div class="pf-dropdown" id="pfDropdown">
                         <div class="pf-dropdown-header">
                             <div class="pf-dropdown-avatar">
-                                <img th:if="${avatarUrl != null}" th:src="${avatarUrl}"
+                                <img th:if="${avatarUrl != null}"
+                                     th:src="${avatarUrl}"
                                      alt="头像" class="pf-avatar-img" />
-                                <span th:unless="${avatarUrl != null}" class="pf-avatar-placeholder"
-                                      th:text="${username != null ? username.substring(0,1).toUpperCase() : 'U'}">U</span>
+                                <img th:unless="${avatarUrl != null}"
+                                     th:src="'https://api.dicebear.com/7.x/notionists/svg?seed=' + ${username}"
+                                     alt="头像" class="pf-avatar-img pf-default-avatar" />
                             </div>
                             <div>
                                 <div class="pf-dropdown-name" th:text="${username}">用户名</div>
@@ -460,7 +451,7 @@
         </ul>
     </div>
 
-    <!-- ===== 头像上传 Modal（放在 nav 内，随 fragment 一起注入） ===== -->
+    <!-- ===== 头像上传 Modal ===== -->
     <div class="pf-modal-overlay" id="pfModalOverlay" th:if="${loggedIn}">
         <div class="pf-modal">
             <div class="pf-modal-header">
@@ -485,9 +476,11 @@
     </div>
 
     <!-- ===== JavaScript ===== -->
-    <script th:if="${loggedIn}">
+    <script th:if="${loggedIn}" th:inline="javascript">
     (function() {
         'use strict';
+
+        var currentUsername = /*[[${username}]]*/ 'User';
 
         // === DOM Elements ===
         var trigger   = document.getElementById('pfTrigger');
@@ -506,13 +499,15 @@
 
         var selectedFile = null;
 
+        // Dicebear 默认头像 URL
+        var defaultAvatarUrl = 'https://api.dicebear.com/7.x/notionists/svg?seed=' + encodeURIComponent(currentUsername);
+
         // === 1. Toggle Dropdown ===
         trigger.addEventListener('click', function(e) {
             e.stopPropagation();
             dropdown.classList.toggle('pf-show');
         });
 
-        // 点击外部关闭 dropdown
         document.addEventListener('click', function(e) {
             if (!dropdown.contains(e.target) && !trigger.contains(e.target)) {
                 dropdown.classList.remove('pf-show');
@@ -557,7 +552,6 @@
             if (e.target === overlay) closeModal();
         });
 
-        // ESC 关闭
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closeModal();
@@ -570,7 +564,6 @@
             fileInput.click();
         });
 
-        // 拖拽支持
         previewZone.addEventListener('dragover', function(e) {
             e.preventDefault();
             previewZone.style.borderColor = '#667eea';
@@ -632,7 +625,6 @@
             .then(function(result) {
                 if (result.code === 200 && result.data && result.data.avatarUrl) {
                     var newUrl = result.data.avatarUrl;
-                    // 无感刷新：替换页面上所有头像
                     replaceAllAvatars(newUrl);
                     closeModal();
                 } else {
@@ -651,28 +643,12 @@
 
         // === 7. 无感替换所有头像 ===
         function replaceAllAvatars(newUrl) {
-            // 替换所有 .pf-avatar-img
-            var imgs = document.querySelectorAll('.pf-avatar-img');
-            imgs.forEach(function(img) {
-                img.src = newUrl + '?t=' + Date.now();
-            });
-
-            // 隐藏所有首字母占位符，创建 img 替代
-            var placeholders = document.querySelectorAll('.pf-avatar-placeholder');
-            placeholders.forEach(function(ph) {
-                var parent = ph.parentElement;
-                var img = document.createElement('img');
-                img.src = newUrl + '?t=' + Date.now();
-                img.alt = '头像';
-                img.className = 'pf-avatar-img';
-                // 让 img 尺寸跟随父容器
-                img.style.width = '100%';
-                img.style.height = '100%';
-                img.style.borderRadius = '50%';
-                img.style.objectFit = 'cover';
-                img.style.display = 'block';
-                parent.insertBefore(img, ph);
-                ph.style.display = 'none';
+            var cacheBuster = '?t=' + Date.now();
+            // 替换 navbar 中所有头像（包括 Dicebear 默认头像和已上传头像）
+            var allAvatarImgs = document.querySelectorAll('.pf-avatar-img');
+            allAvatarImgs.forEach(function(img) {
+                img.src = newUrl + cacheBuster;
+                img.classList.remove('pf-default-avatar');
             });
         }
 

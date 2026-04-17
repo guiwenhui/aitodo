@@ -84,7 +84,7 @@ public class UserController {
      * 使用 UUID 生成唯一文件名，保存到本地 uploads/avatars/ 目录，
      * 更新数据库和 Session 中的 avatarUrl。
      */
-    @PostMapping("/uploadAvatar")
+    @PostMapping({"/uploadAvatar", "/api/avatar"})
     public Result<?> uploadAvatar(@RequestParam("file") MultipartFile file, HttpSession session) {
         // 1. 验证用户登录状态
         Long userId = (Long) session.getAttribute("userId");

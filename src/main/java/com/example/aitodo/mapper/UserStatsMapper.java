@@ -77,8 +77,8 @@ public interface UserStatsMapper {
     @Select("SELECT * FROM user_stats ORDER BY current_level DESC, total_points DESC LIMIT #{limit}")
     List<UserStats> selectTopUsers(@Param("limit") int limit);
 
-    // 🌟 修复 3：获取排行榜列表（带排名计算，双重排序）
-    @Select("SELECT us.user_id AS userId, u.username, us.total_points AS points, us.current_level AS level, " +
+    // 🌟 修复 3：获取排行榜列表（带排名计算，双重排序，含头像）
+    @Select("SELECT us.user_id AS userId, u.username, u.avatar_url AS avatarUrl, us.total_points AS points, us.current_level AS level, " +
             "(SELECT COUNT(*) FROM user_stats us2 " +
             "WHERE us2.current_level > us.current_level " +
             "OR (us2.current_level = us.current_level AND us2.total_points > us.total_points)) + 1 AS `rank` " +
@@ -87,13 +87,10 @@ public interface UserStatsMapper {
             "ORDER BY us.current_level DESC, us.total_points DESC LIMIT #{limit}")
     List<LeaderboardEntryDTO> selectLeaderboard(@Param("limit") int limit);
 
-    // 🌟 修复 4：获取完整排行榜（带排名计算，双重排序）
-    @Select("SELECT us.user_id AS userId, u.username, us.total_points AS points, us.current_level AS level, " +
-            "(SELECT COUNT(*) FROM user_stats us2 " +
-            "WHERE us2.current_level > us.current_level " +
-            "OR (us2.current_level = us.current_level AND us2.total_points > us.total_points)) + 1 AS `rank` " +
+    // 🌟 修改：在 SELECT 后面加入 u.avatar_url AS avatarUrl
+    @Select("SELECT us.user_id AS userId, u.username, u.avatar_url AS avatarUrl, " +
+            "us.total_points AS points, us.current_level AS level " +
             "FROM user_stats us " +
-            "LEFT JOIN users u ON us.user_id = u.id " +
-            "ORDER BY us.current_level DESC, us.total_points DESC")
+            "LEFT JOIN users u ON us.user_id = u.id")
     List<LeaderboardEntryDTO> selectAllLeaderboard();
 }

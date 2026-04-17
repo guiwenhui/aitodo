@@ -5,20 +5,22 @@ package com.example.aitodo.dto;
  */
 public class LeaderboardEntryDTO {
     private Long userId;
-    private String username;  // 需要从User表获取，这里先留空或通过JOIN查询
+    private String username;
     private Integer points;
     private Integer level;
     private Integer rank;
+    private String avatarUrl;
 
     public LeaderboardEntryDTO() {
     }
 
-    public LeaderboardEntryDTO(Long userId, String username, Integer points, Integer level, Integer rank) {
+    public LeaderboardEntryDTO(Long userId, String username, Integer points, Integer level, Integer rank, String avataUrl) {
         this.userId = userId;
         this.username = username;
         this.points = points;
         this.level = level;
         this.rank = rank;
+        this.avatarUrl = avataUrl;
     }
 
     // Getters and Setters
@@ -62,6 +64,14 @@ public class LeaderboardEntryDTO {
         this.rank = rank;
     }
 
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
+
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
+    }
+
     @Override
     public String toString() {
         return "LeaderboardEntryDTO{" +
@@ -70,6 +80,7 @@ public class LeaderboardEntryDTO {
                 ", points=" + points +
                 ", level=" + level +
                 ", rank=" + rank +
+                ", avatarUrl='" + avatarUrl + '\'' +
                 '}';
     }
 }

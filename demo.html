@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-CN" xmlns:th="http://www.thymeleaf.org">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${appName != null ? appName + ' - 注册' : 'Razor - 创建账号'}">AI Todo - 注册</title>
+    <title>Razor - Agent Login</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -80,7 +80,7 @@
             gap: 24px;
         }
 
-        .login-link {
+        .signup-link {
             font-size: 14px;
             font-weight: 500;
             color: var(--text-main);
@@ -113,7 +113,7 @@
             padding: 40px 20px;
         }
 
-        .register-card {
+        .login-card {
             background-color: var(--card-bg);
             width: 100%;
             max-width: 440px;
@@ -123,7 +123,7 @@
             text-align: center;
         }
 
-        .register-card h2 {
+        .login-card h2 {
             font-size: 28px;
             font-weight: 700;
             margin-bottom: 8px;
@@ -132,32 +132,12 @@
         .subtitle {
             font-size: 14px;
             color: var(--text-secondary);
-            margin-bottom: 24px;
-        }
-
-        /* 提示消息样式 */
-        .message {
-            padding: 12px 16px;
-            border-radius: var(--radius);
-            font-size: 13px;
-            font-weight: 500;
-            margin-bottom: 20px;
-            display: none;
-            text-align: left;
-        }
-        .message.show { display: block; animation: fadeIn 0.3s ease; }
-        .message.success { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
-        .message.error { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
-        .message.info { background: #e3f2fd; color: #1565c0; border: 1px solid #bbdefb; }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-5px); }
-            to { opacity: 1; transform: translateY(0); }
+            margin-bottom: 32px;
         }
 
         /* 表单样式 */
         .form-group {
-            margin-bottom: 18px;
+            margin-bottom: 20px;
             position: relative;
             text-align: left;
         }
@@ -179,23 +159,36 @@
             font-family: inherit;
         }
 
-        .form-group input:focus { border-color: var(--primary-orange); }
+        .form-group input:focus {
+            border-color: var(--primary-orange);
+        }
 
         .input-icon {
             position: absolute;
             right: 16px;
             color: #ccc;
+            cursor: pointer;
         }
 
-        .form-hint {
-            display: block;
+        .toggle-password {
             font-size: 12px;
-            color: #999;
-            margin-top: 6px;
-            margin-left: 4px;
+            font-weight: 600;
+            color: var(--text-main);
+            cursor: pointer;
+            user-select: none;
         }
 
-        .btn-register {
+        .trouble-link {
+            display: block;
+            text-align: left;
+            font-size: 13px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            margin-bottom: 24px;
+        }
+        .trouble-link:hover { text-decoration: underline; }
+
+        .btn-signin {
             width: 100%;
             padding: 14px;
             background-color: var(--primary-orange);
@@ -206,15 +199,50 @@
             font-weight: 600;
             cursor: pointer;
             transition: var(--transition);
-            margin-top: 8px;
+            margin-bottom: 32px;
+        }
+        .btn-signin:hover { background-color: var(--primary-orange-hover); }
+
+        /* 分割线 */
+        .divider {
+            display: flex;
+            align-items: center;
             margin-bottom: 24px;
+            color: var(--text-lighter);
+            font-size: 13px;
+        }
+        .divider::before, .divider::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background-color: var(--border-color);
+        }
+        .divider span { padding: 0 12px; color: #999; }
+
+        /* 第三方登录 */
+        .social-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+
+        .btn-social {
+            flex: 1;
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 8px;
+            height: 48px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            background: white;
+            cursor: pointer;
+            transition: var(--transition);
         }
-        .btn-register:hover { background-color: var(--primary-orange-hover); }
-        .btn-register:disabled { opacity: 0.7; cursor: not-allowed; }
+        .btn-social:hover {
+            background-color: #f9f9f9;
+            border-color: #ccc;
+        }
+        .btn-social img { width: 20px; height: 20px; }
 
         .footer-text {
             font-size: 14px;
@@ -238,15 +266,13 @@
             color: var(--text-secondary);
             text-decoration: none;
             margin-left: 24px;
-            transition: var(--transition);
         }
-        .footer-links a:hover { color: var(--primary-orange); }
 
         /* 响应式 */
         @media (max-width: 600px) {
             header { padding: 16px 20px; }
-            .header-left .email-link, .header-right .login-link { display: none; }
-            .register-card { padding: 32px 24px; }
+            .header-left .email-link, .header-right .signup-link { display: none; }
+            .login-card { padding: 32px 24px; }
             .page-footer { flex-direction: column; align-items: center; gap: 12px; text-align: center; }
             .footer-links a { margin: 0 12px; }
             .decor-3 { display: none; }
@@ -273,160 +299,88 @@
 
 <header>
     <div class="header-left">
-        <div class="brand" th:text="${appName ?: 'Razor.'}">Razor.</div>
+        <div class="brand">Razor.</div>
         <a href="mailto:Sales@Razor.uk" class="email-link">Sales@Razor.uk</a>
     </div>
     <div class="header-right">
-        <a href="/login" class="login-link">Log in</a>
-        <button class="btn-demo">Demo Request</button>
+        <a href="#" class="signup-link">Sign up</a>
+        <button class="btn-demo">Request Demo</button>
     </div>
 </header>
 
 <main>
-    <div class="register-card">
-        <h2>Sign up</h2>
-        <p class="subtitle"></p>
+    <div class="login-card">
+        <h2>Agent Login</h2>
+        <p class="subtitle">Hey, Enter your details to get sign in to your account</p>
 
-        <div class="message" id="message">
-            <i class="fas fa-info-circle"></i> <span id="messageText"></span>
-        </div>
-
-        <form id="registerForm">
+        <form id="loginForm">
             <div class="form-group">
                 <div class="input-wrapper">
-                    <input type="text" id="username" placeholder="请输入用户名（3-20个字符）" required>
-                    <div class="input-icon"><i class="fa-regular fa-user"></i></div>
-                </div>
-                <span class="form-hint">这将作为您的系统显示名称</span>
-            </div>
-
-            <div class="form-group">
-                <div class="input-wrapper">
-                    <input type="email" id="email" placeholder="请输入邮箱地址（可选）">
-                    <div class="input-icon"><i class="fa-regular fa-envelope"></i></div>
-                </div>
-                <span class="form-hint">用于接收重要通知和找回密码</span>
-            </div>
-
-            <div class="form-group">
-                <div class="input-wrapper">
-                    <input type="password" id="password" placeholder="请输入密码（至少6位）" required>
-                    <div class="input-icon"><i class="fa-solid fa-lock"></i></div>
+                    <input type="text" placeholder="Enter Email / Phone No" required>
+                    <div class="input-icon"><i class="fa-regular fa-circle-user"></i></div>
                 </div>
             </div>
 
             <div class="form-group">
                 <div class="input-wrapper">
-                    <input type="password" id="confirmPassword" placeholder="请再次确认密码" required>
-                    <div class="input-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                    <input type="password" id="passcodeInput" placeholder="Passcode" required>
+                    <div class="input-icon toggle-password" id="passwordToggle">Hide</div>
                 </div>
             </div>
 
-            <button type="submit" class="btn-register">立即注册</button>
+            <a href="#" class="trouble-link">Having trouble in sign in?</a>
+
+            <button type="submit" class="btn-signin">Sign in</button>
+
+            <div class="divider">
+                <span>Or Sign in with</span>
+            </div>
+
+            <div class="social-group">
+                <button type="button" class="btn-social">
+                    <img src="https://www.gstatic.com/images/branding/product/2x/googleg_48dp.png" alt="Google">
+                </button>
+                <button type="button" class="btn-social">
+                    <i class="fa-brands fa-apple" style="font-size: 22px;"></i>
+                </button>
+                <button type="button" class="btn-social">
+                    <i class="fa-brands fa-facebook" style="font-size: 22px; color: #1877F2;"></i>
+                </button>
+            </div>
 
             <div class="footer-text">
-                已有账号？ <a href="/login">立即登录</a>
+                Don't have an account? <a href="#">Request Now</a>
             </div>
         </form>
     </div>
 </main>
 
 <footer class="page-footer">
-    <div class="copyright">版权所有 @wework 2022</div>
+    <div class="copyright">Copyright @wework 2022</div>
     <div class="footer-links">
-        <a href="/">返回首页</a>
-        <a href="#">隐私政策</a>
+        <a href="#">Privacy Policy</a>
     </div>
 </footer>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const registerForm = document.getElementById('registerForm');
-        const message = document.getElementById('message');
-        const messageText = document.getElementById('messageText');
+    // 密码显示/隐藏切换
+    const passwordToggle = document.getElementById('passwordToggle');
+    const passcodeInput = document.getElementById('passcodeInput');
 
-        registerForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-
-            const username = document.getElementById('username').value.trim();
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value.trim();
-            const confirmPassword = document.getElementById('confirmPassword').value.trim();
-
-            // 验证输入
-            if (!username || username.length < 3 || username.length > 20) {
-                showMessage('用户名长度需在3-20个字符之间', 'error');
-                return;
-            }
-
-            if (password.length < 6) {
-                showMessage('密码长度至少为6位', 'error');
-                return;
-            }
-
-            if (password !== confirmPassword) {
-                showMessage('两次输入的密码不一致', 'error');
-                return;
-            }
-
-            // 显示加载状态
-            const submitBtn = registerForm.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 处理中...';
-            submitBtn.disabled = true;
-
-            try {
-                const userData = { username: username, password: password };
-                if (email) userData.email = email;
-
-                const response = await fetch('/user/register', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(userData)
-                });
-
-                const result = await response.json();
-
-                if (result.code === 200) {
-                    showMessage('注册成功！', 'success');
-                    registerForm.reset();
-
-                    setTimeout(() => {
-                        window.location.href = '/login';
-                    }, 2000);
-                } else {
-                    showMessage(result.message || '注册失败，请稍后重试。', 'error');
-                }
-            } catch (error) {
-                showMessage('网络错误，请稍后重试', 'error');
-                console.error('注册错误:', error);
-            } finally {
-                submitBtn.innerHTML = originalText;
-                submitBtn.disabled = false;
-            }
-        });
-
-        // 提示信息动态控制
-        function showMessage(text, type = 'info') {
-            messageText.textContent = text;
-            message.className = 'message show';
-            message.classList.add(type);
-
-            // 5秒后自动隐藏
-            setTimeout(() => {
-                message.classList.remove('show');
-            }, 5000);
+    passwordToggle.addEventListener('click', () => {
+        if (passcodeInput.type === 'password') {
+            passcodeInput.type = 'text';
+            passwordToggle.textContent = 'Show';
+        } else {
+            passcodeInput.type = 'password';
+            passwordToggle.textContent = 'Hide';
         }
+    });
 
-        // 输入时自动隐藏消息
-        const inputs = document.querySelectorAll('input');
-        inputs.forEach(input => {
-            input.addEventListener('input', () => {
-                message.classList.remove('show');
-            });
-        });
+    // 表单提交模拟
+    document.getElementById('loginForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        alert('Sign in 按钮被点击，正在模拟登录请求...');
     });
 </script>
 </body>

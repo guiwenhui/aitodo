@@ -38,7 +38,7 @@ public class WebController {
             return "vue-home";
         } else {
             // 未登录，显示首页（宣传页面）
-            model.addAttribute("appName", "AI Todo + 拖延症治疗器");
+            model.addAttribute("appName", "AI Todo");
             model.addAttribute("version", "1.0.0");
             return "index";
         }
@@ -90,7 +90,7 @@ public class WebController {
             return "redirect:/login";
         }
 
-        model.addAttribute("pageTitle", "AI 提醒 - 拖延症治疗器");
+        model.addAttribute("pageTitle", "AI warning");
         model.addAttribute("loggedIn", true);
         model.addAttribute("username", username);
         model.addAttribute("avatarUrl", session.getAttribute("avatarUrl"));
@@ -139,7 +139,7 @@ public class WebController {
             // 未登录
             model.addAttribute("loggedIn", false);
         }
-        model.addAttribute("appName", "AI Todo + 拖延症治疗器");
+        model.addAttribute("appName", "AI Todo");
         model.addAttribute("version", "1.0.0");
         return "health";
     }
@@ -155,7 +155,7 @@ public class WebController {
             return "redirect:/tasks";
         }
 
-        model.addAttribute("appName", "AI Todo + 拖延症治疗器");
+        model.addAttribute("appName", "AI Todo");
         model.addAttribute("version", "1.0.0");
         return "login";
     }
@@ -171,7 +171,7 @@ public class WebController {
             return "redirect:/tasks";
         }
 
-        model.addAttribute("appName", "AI Todo + 拖延症治疗器");
+        model.addAttribute("appName", "AI Todo");
         model.addAttribute("version", "1.0.0");
         return "register";
     }
