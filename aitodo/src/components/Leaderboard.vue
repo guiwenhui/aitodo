@@ -33,8 +33,7 @@
             <div class="rank-number">0{{ item.rank }}</div>
 
             <div class="avatar-container">
-              <img :src="item.avatarUrl || '/vue/default-avatar.png'" class="avatar" />
-                   class="avatar" />
+              <img :src="getAvatar(item)" class="avatar" />
               <div v-if="item.rank === 1" class="crown-icon">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
               </div>
@@ -68,7 +67,7 @@
               </td>
               <td class="col-user">
                 <div class="user-cell">
-                  <img :src="item.avatarUrl || `https://api.dicebear.com/7.x/notionists/svg?seed=${item.username}`" class="mini-avatar" />
+                  <img :src="getAvatar(item)" class="mini-avatar" />
                   <span class="user-name">{{ item.username }}</span>
                 </div>
               </td>
@@ -93,6 +92,29 @@ const error = ref('')
 
 const getLevel = (item) => parseInt(item.level || item.currentLevel || 0, 10);
 const getPoints = (item) => parseInt(item.points || item.totalPoints || 0, 10);
+
+const getAvatar = (item) => {
+  const url = item.avatarUrl;
+
+  // 1. 如果用户有上传自己的头像
+  if (url && url !== 'null' && url !== 'undefined' && url.trim() !== '') {
+    // 检查是否为相对路径
+    if (url.startsWith('/uploads')) {
+      // 本地开发环境：加上 8080 端口
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        return `http://localhost:8080${url}`;
+      }
+      // 线上环境：直接强制拼上你的真实域名（稳妥起见，不依赖浏览器自动解析）
+      return `http://aitodo.xin${url}`;
+    }
+    // 如果已经是完整的 http 开头的网络图片，直接返回
+    return url;
+  }
+
+  // 2. 如果用户没有头像，生成默认的彩色字母头像（极速加载，不裂图）
+  const seed = encodeURIComponent(item.username || 'User');
+  return `https://ui-avatars.com/api/?name=${seed}&background=random&color=fff&size=128`;
+};
 
 const topThree = computed(() => {
   const top = leaderboard.value.slice(0, 3)
