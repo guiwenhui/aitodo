@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title th:text="${appName != null ? appName + ' - 登录' : 'Razor - 登录'}">AI Todo - 登录</title>
+    <title th:text="${appName != null ? appName + ' - 登录' : 'Razor - Agent Login'}">AI Todo - 登录</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -36,15 +36,23 @@
             position: relative;
         }
 
-        /* 背景线条插画装饰 */
+        /* 🌟 核心修改：重新定位左右两侧的巨型插画 */
         .bg-decor {
             position: absolute;
             z-index: -1;
             pointer-events: none;
+            bottom: 5vh; /* 统一对齐到底部 */
         }
-        .decor-1 { top: 10%; left: 5%; width: 200px; opacity: 0.6; }
-        .decor-2 { bottom: 15%; left: 10%; width: 150px; opacity: 0.5; }
-        .decor-3 { top: 20%; right: 5%; width: 300px; }
+        .decor-left {
+            left: 2vw;
+            width: 380px;
+            max-width: 35vw;
+        }
+        .decor-right {
+            right: 2vw;
+            width: 480px;
+            max-width: 45vw;
+        }
 
         /* 头部 */
         header {
@@ -290,6 +298,8 @@
             justify-content: space-between;
             font-size: 12px;
             color: var(--text-secondary);
+            position: relative;
+            z-index: 10;
         }
         .footer-links a {
             color: var(--text-secondary);
@@ -300,32 +310,83 @@
         .footer-links a:hover { color: var(--primary-orange); }
 
         /* 响应式 */
+        @media (max-width: 1024px) {
+            .bg-decor { opacity: 0.3; } /* 小屏幕透明度降低防止遮挡文字 */
+        }
         @media (max-width: 600px) {
             header { padding: 16px 20px; }
             .header-left .email-link, .header-right .signup-link { display: none; }
             .login-card { padding: 32px 24px; }
             .page-footer { flex-direction: column; align-items: center; gap: 12px; text-align: center; }
             .footer-links a { margin: 0 12px; }
-            .decor-3 { display: none; }
+            .bg-decor { display: none; } /* 手机端隐藏背景插画 */
         }
     </style>
 </head>
 <body>
 
-<svg class="bg-decor decor-1" viewBox="0 0 200 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M10 50 Q 50 10, 90 50 T 170 50" stroke="#000" stroke-width="2" fill="none"/>
-    <circle cx="180" cy="30" r="5" fill="#000"/>
+<svg class="bg-decor decor-left" viewBox="0 0 350 450" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="240" cy="50" r="5" fill="none" stroke="#111" stroke-width="1.5"/>
+    <circle cx="310" cy="200" r="4" fill="none" stroke="#111" stroke-width="1.5"/>
+    <path d="M20,120 Q60,60 120,120 T220,100" fill="none" stroke="#111" stroke-width="1.2" stroke-linecap="round"/>
+
+    <path d="M120,160 h70 v50 h-20 l-15,15 v-15 h-35 z" fill="#F5F0E6" stroke="#111" stroke-width="1.5" stroke-linejoin="round"/>
+    <path d="M60,180 h90 v60 h-60 l-15,15 v-15 h-15 z" fill="#FFF" stroke="#111" stroke-width="1.5" stroke-linejoin="round"/>
+    <line x1="80" y1="205" x2="130" y2="205" stroke="#111" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="80" y1="220" x2="110" y2="220" stroke="#111" stroke-width="1.5" stroke-linecap="round"/>
+
+    <pattern id="dotsLeft" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+        <circle cx="10" cy="10" r="2.5" fill="#111"/>
+    </pattern>
+    <rect x="50" y="300" width="60" height="130" fill="#FFB366" stroke="#111" stroke-width="1.5"/>
+    <rect x="50" y="300" width="60" height="130" fill="url(#dotsLeft)"/>
+
+    <rect x="130" y="350" width="70" height="80" fill="#FFF" stroke="#111" stroke-width="1.5"/>
+    <path d="M150,400 Q170,400 175,375 M160,375 l15,0 l0,15" fill="none" stroke="#111" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+    <line x1="0" y1="430" x2="350" y2="430" stroke="#111" stroke-width="0.5"/>
 </svg>
 
-<svg class="bg-decor decor-2" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="10" y="10" width="40" height="40" rx="4" stroke="#000" stroke-width="1"/>
-    <path d="M60 70 L 90 70 M 75 55 L 75 85" stroke="#000" stroke-width="2"/>
-</svg>
+<svg class="bg-decor decor-right" viewBox="0 0 450 450" xmlns="http://www.w3.org/2000/svg">
+    <path d="M280,60 Q330,100 360,80 T420,90" fill="none" stroke="#111" stroke-width="1.2" stroke-linecap="round"/>
+    <circle cx="430" cy="120" r="4" fill="none" stroke="#111" stroke-width="1.5"/>
+    <path d="M260,110 h40 v30 h-10 l-10,10 v-10 h-20 z" fill="#FFF" stroke="#111" stroke-width="1.5" stroke-linejoin="round"/>
+    <line x1="270" y1="122" x2="290" y2="122" stroke="#111" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="270" y1="130" x2="285" y2="130" stroke="#111" stroke-width="1.5" stroke-linecap="round"/>
 
-<svg class="bg-decor decor-3" viewBox="0 0 400 500" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="200" cy="150" r="40" fill="#E0E0E0"/>
-    <rect x="140" y="200" width="120" height="200" rx="20" fill="#E0E0E0"/>
-    <path d="M100 300 Q 150 250, 200 300 T 300 300" stroke="#000" stroke-width="1.5" stroke-dasharray="5 5"/>
+    <g transform="translate(0, 10)">
+        <rect x="250" y="260" width="90" height="160" fill="#FFF" stroke="#111" stroke-width="1.5"/>
+
+        <pattern id="dotsRight" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
+            <circle cx="10" cy="10" r="2.5" fill="#111"/>
+        </pattern>
+        <rect x="370" y="280" width="60" height="140" fill="#FFB366" stroke="#111" stroke-width="1.5"/>
+        <rect x="370" y="280" width="60" height="140" fill="url(#dotsRight)"/>
+
+        <path d="M210,380 L250,290 L270,290 L230,380 Z" fill="#FFF" stroke="#111" stroke-width="1.5" stroke-linejoin="round"/>
+        <path d="M195,380 L215,375 L210,390 L190,385 Z" fill="#111"/>
+
+        <path d="M240,360 L270,280 L290,280 L260,360 Z" fill="#FFF" stroke="#111" stroke-width="1.5" stroke-linejoin="round"/>
+        <path d="M225,360 L245,355 L240,370 L220,365 Z" fill="#111"/>
+
+        <path d="M250,190 C280,190 295,220 290,290 L240,290 C230,240 240,200 250,190 Z" fill="#111" stroke="#111" stroke-width="1.5" stroke-linejoin="round"/>
+        <circle cx="260" cy="210" r="1.5" fill="#FFF"/><circle cx="280" cy="220" r="1.5" fill="#FFF"/>
+        <circle cx="265" cy="240" r="1.5" fill="#FFF"/><circle cx="250" cy="230" r="1.5" fill="#FFF"/>
+        <circle cx="275" cy="255" r="1.5" fill="#FFF"/><circle cx="255" cy="265" r="1.5" fill="#FFF"/>
+        <circle cx="285" cy="280" r="1.5" fill="#FFF"/><circle cx="245" cy="280" r="1.5" fill="#FFF"/>
+
+        <polygon points="190,200 210,245 240,250 220,205" fill="#C5E063" stroke="#111" stroke-width="1.5" stroke-linejoin="round"/>
+
+        <path d="M255,205 C230,225 215,225 210,220" fill="none" stroke="#111" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M270,210 C245,230 230,230 225,225" fill="none" stroke="#111" stroke-width="2.5" stroke-linecap="round"/>
+
+        <circle cx="265" cy="165" r="15" fill="#FFF" stroke="#111" stroke-width="1.5"/>
+        <path d="M265,165 C260,165 255,170 255,175" fill="none" stroke="#111" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M253,155 C270,145 285,155 290,175 C300,180 300,195 285,195 C275,195 265,190 255,180 Z" fill="#111"/>
+        <circle cx="285" cy="145" r="10" fill="#111"/>
+    </g>
+
+    <line x1="20" y1="430" x2="450" y2="430" stroke="#111" stroke-width="0.5"/>
 </svg>
 
 <header>
@@ -341,7 +402,7 @@
 
 <main>
     <div class="login-card">
-        <h2>Agent Login</h2>
+        <h2>Agent  Login</h2>
         <p class="subtitle"> </p>
 
         <div class="error-message" id="errorMessage">
