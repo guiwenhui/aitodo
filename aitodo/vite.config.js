@@ -1,35 +1,35 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
+import { resolve } from 'path' // 引入 path 模块
 
 export default defineConfig({
-  base: '/vue/',
-  plugins: [vue()],
+    base: '/vue/',
+    plugins: [vue()],
 
-  // 🌟 自动化流配置
-  build: {
-    // 1. 自动把打包结果丢到 Spring Boot 静态资源目录 (请确保路径对应你的实际项目结构)
-    outDir: '/Users/guiwenhui/Documents/workplace/sheji/ai-todo-procrastination-cure/src/main/resources/static/vue',
-    // 每次打包前自动清空旧文件
-    emptyOutDir: true,
+    build: {
+        // 🌟 核心修复：使用相对路径！
+        // 这样无论你的项目文件夹叫什么名字、拷贝到哪台电脑，都能精准打包到当前的 Spring Boot 目录下！
+        outDir: '../src/main/resources/static/vue',
 
-    // 2. 🌟 核心魔法：固定文件名！去掉乱码 Hash！
-    rollupOptions: {
-      output: {
-        entryFileNames: 'assets/index.js',   // 固定 JS 入口名字
-        chunkFileNames: 'assets/[name].js',  // 固定其他分包 JS 名字
-        assetFileNames: 'assets/[name].[ext]' // 固定 CSS 等静态资源名字
-      }
-    }
-  },
+        emptyOutDir: true,
 
-  server: {
-    port: 5173,
-    proxy: {
-      '/api': {
-        target: 'http://localhost:8080',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, '/api'),
-      },
+        rollupOptions: {
+            output: {
+                entryFileNames: 'assets/index.js',
+                chunkFileNames: 'assets/[name].js',
+                assetFileNames: 'assets/[name].[ext]'
+            }
+        }
     },
-  },
+
+    server: {
+        port: 5173,
+        proxy: {
+            '/api': {
+                target: 'http://localhost:8080',
+                changeOrigin: true,
+                rewrite: (path) => path.replace(/^\/api/, '/api'),
+            },
+        },
+    },
 })
