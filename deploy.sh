@@ -13,8 +13,8 @@ After=network.target mysqld.service
 Type=simple
 User=root
 WorkingDirectory=/opt
-Environment=JAVA_HOME=/usr/lib/jvm/java-21-alibaba-dragonwell-21.0.5.0.5-1.1.al8.x86_64
-ExecStart=/usr/lib/jvm/java-21-alibaba-dragonwell-21.0.5.0.5-1.1.al8.x86_64/bin/java -jar /opt/aitodo.jar --server.port=8080
+Environment=JAVA_HOME=/usr/lib/jvm/jre-21
+ExecStart=/usr/bin/java -jar /opt/aitodo.jar --server.port=8080
 Restart=always
 RestartSec=10
 

@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS users (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(50) NOT NULL UNIQUE,
     password VARCHAR(100) NOT NULL,
+    avatar_url VARCHAR(255) DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -43,12 +44,13 @@ CREATE TABLE IF NOT EXISTS task_logs (
 );
 
 -- 创建索引
-DROP INDEX IF EXISTS idx_tasks_user_id ON tasks;
+-- DROP INDEX IF EXISTS idx_tasks_user_id ON tasks;
 CREATE INDEX idx_tasks_user_id ON tasks(user_id);
-DROP INDEX IF EXISTS idx_tasks_status ON tasks;
+-- DROP INDEX IF EXISTS idx_tasks_status ON tasks;
 CREATE INDEX idx_tasks_status ON tasks(status);
-DROP INDEX IF EXISTS idx_task_logs_task_id ON task_logs;
+-- DROP INDEX IF EXISTS idx_task_logs_task_id ON task_logs;
 CREATE INDEX idx_task_logs_task_id ON task_logs(task_id);
+
 
 -- 创建游戏化相关表
 CREATE TABLE IF NOT EXISTS user_stats (

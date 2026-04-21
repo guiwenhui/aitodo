@@ -100,12 +100,10 @@ const getAvatar = (item) => {
   if (url && url !== 'null' && url !== 'undefined' && url.trim() !== '') {
     // 检查是否为相对路径
     if (url.startsWith('/uploads')) {
-      // 本地开发环境：加上 8080 端口
-      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-        return `http://localhost:8080${url}`;
-      }
-      // 线上环境：直接强制拼上你的真实域名（稳妥起见，不依赖浏览器自动解析）
-      return `http://aitodo.xin${url}`;
+      // 🌟 修复：直接使用 window.location.origin，自动匹配当前的 http/https 以及域名端口
+      // 本地跑会自动变成 http://localhost:端口/uploads/...
+      // 线上跑会自动变成 https://你的域名/uploads/...
+      return `${window.location.origin}${url}`;
     }
     // 如果已经是完整的 http 开头的网络图片，直接返回
     return url;
