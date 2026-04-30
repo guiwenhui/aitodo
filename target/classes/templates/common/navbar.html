@@ -5,206 +5,182 @@
 <nav th:fragment="top-nav" class="minimal-nav">
 
     <style>
-        /* ===== Profile Trigger (头像点击区) ===== */
+        /* ===== Profile Trigger ===== */
         .pf-profile-area {
             position: relative;
             display: flex;
             align-items: center;
         }
-
         .pf-trigger {
-            width: 38px;
-            height: 38px;
-            border-radius: 50%;
-            cursor: pointer;
-            border: 2px solid transparent;
+            width: 38px; height: 38px; border-radius: 50%;
+            cursor: pointer; border: 2px solid transparent;
             transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: none;
-            padding: 0;
-            outline: none;
-            position: relative;
-            flex-shrink: 0;
+            overflow: hidden; display: flex; align-items: center; justify-content: center;
+            background: none; padding: 0; outline: none; position: relative; flex-shrink: 0;
         }
-
         .pf-trigger:hover {
             border-color: rgba(255, 179, 102, 0.5);
             box-shadow: 0 0 0 4px rgba(255, 179, 102, 0.15);
             transform: scale(1.05);
         }
-
-        /* 正在上传时的轻微反馈 */
         .pf-trigger.is-uploading {
-            opacity: 0.5;
-            pointer-events: none;
-            animation: pulse-avatar 1.5s infinite;
+            opacity: 0.5; pointer-events: none; animation: pulse-avatar 1.5s infinite;
         }
         @keyframes pulse-avatar {
-            0% { transform: scale(1); }
-            50% { transform: scale(0.95); }
-            100% { transform: scale(1); }
+            0% { transform: scale(1); } 50% { transform: scale(0.95); } 100% { transform: scale(1); }
         }
-
         .pf-avatar-img {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            object-fit: cover;
-            display: block;
+            width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block;
         }
-
-        /* ===== Tooltip ===== */
         .pf-tooltip {
-            position: absolute;
-            bottom: -36px;
-            left: 50%;
+            position: absolute; bottom: -36px; left: 50%;
             transform: translateX(-50%) translateY(8px);
-            background: rgba(30, 30, 30, 0.85);
-            backdrop-filter: blur(4px);
-            color: #fff;
-            font-size: 12px;
-            font-weight: 500;
-            padding: 6px 12px;
-            border-radius: 8px;
-            white-space: nowrap;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
-            z-index: 1010;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            background: rgba(30,30,30,0.85); backdrop-filter: blur(4px);
+            color: #fff; font-size: 12px; font-weight: 500;
+            padding: 6px 12px; border-radius: 8px; white-space: nowrap;
+            pointer-events: none; opacity: 0;
+            transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.2,0.8,0.2,1);
+            z-index: 1010; box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
+        .pf-trigger:hover .pf-tooltip { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-        .pf-trigger:hover .pf-tooltip {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-        }
-
-        /* ===== Dropdown (大厂风悬浮菜单) ===== */
+        /* ===== Dropdown ===== */
         .pf-dropdown {
-            position: absolute;
-            top: calc(100% + 12px);
-            right: 0;
-            width: 260px;
-            background: #ffffff;
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.8);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.06), 0 4px 12px rgba(0, 0, 0, 0.03);
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(10px) scale(0.96);
-            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-            z-index: 1050;
-            overflow: hidden;
+            position: absolute; top: calc(100% + 12px); right: 0; width: 260px;
+            background: #fff; border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.8);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.03);
+            opacity: 0; visibility: hidden; transform: translateY(10px) scale(0.96);
+            transition: all 0.3s cubic-bezier(0.2,0.8,0.2,1); z-index: 1050; overflow: hidden;
         }
-
-        .pf-dropdown.pf-show {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0) scale(1);
-        }
-
+        .pf-dropdown.pf-show { opacity: 1; visibility: visible; transform: translateY(0) scale(1); }
         .pf-dropdown-header {
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            gap: 14px;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.04);
-            background: #fafbfc;
+            padding: 20px; display: flex; align-items: center; gap: 14px;
+            border-bottom: 1px solid rgba(0,0,0,0.04); background: #fafbfc;
         }
-
         .pf-dropdown-avatar {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            overflow: hidden;
-            flex-shrink: 0;
-            border: 2px solid #fff;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            width: 44px; height: 44px; border-radius: 50%; overflow: hidden; flex-shrink: 0;
+            border: 2px solid #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.05);
         }
-
-        .pf-dropdown-avatar .pf-avatar-img {
-            width: 100%;
-            height: 100%;
-        }
-
-        .pf-dropdown-name {
-            font-size: 15px;
-            font-weight: 600;
-            color: #333333;
-            line-height: 1.3;
-        }
-
-        .pf-dropdown-role {
-            font-size: 12px;
-            color: #888;
-            margin-top: 2px;
-        }
-
-        .pf-dropdown-body {
-            padding: 8px 0;
-        }
-
+        .pf-dropdown-avatar .pf-avatar-img { width: 100%; height: 100%; }
+        .pf-dropdown-name { font-size: 15px; font-weight: 600; color: #333; line-height: 1.3; }
+        .pf-dropdown-role { font-size: 12px; color: #888; margin-top: 2px; }
+        .pf-dropdown-body { padding: 8px 0; }
         .pf-dropdown-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 20px;
-            font-size: 13px;
-            font-weight: 500;
-            color: #555;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border: none;
-            background: none;
-            width: 100%;
-            text-align: left;
-            font-family: inherit;
+            display: flex; align-items: center; gap: 12px; padding: 12px 20px;
+            font-size: 13px; font-weight: 500; color: #555; cursor: pointer;
+            transition: all 0.2s ease; border: none; background: none;
+            width: 100%; text-align: left; font-family: inherit;
         }
+        .pf-dropdown-item:hover { background: #FFF2E5; color: #FFB366; }
+        .pf-dropdown-item i { width: 18px; text-align: center; font-size: 15px; color: #999; transition: all 0.2s ease; }
+        .pf-dropdown-item:hover i { color: #FFB366; }
+        .pf-dropdown-divider { height: 1px; background: rgba(0,0,0,0.04); margin: 6px 0; }
+        .pf-dropdown-item.pf-danger { color: #e74c3c; }
+        .pf-dropdown-item.pf-danger i { color: #e74c3c; }
+        .pf-dropdown-item.pf-danger:hover { background: #fef2f2; color: #d32f2f; }
+        .pf-login-link { display: flex; align-items: center; gap: 6px; }
 
-        .pf-dropdown-item:hover {
-            background: #FFF2E5;
-            color: #FFB366;
+        /* ===== Stats Bell Button ===== */
+        .stats-bell-area {
+            position: relative; display: flex; align-items: center; margin-left: 8px;
         }
+        .stats-bell-btn {
+            width: 38px; height: 38px; border-radius: 50%; border: none;
+            background: linear-gradient(135deg, #f0f4ff 0%, #e8eef8 100%);
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            transition: all .3s cubic-bezier(.2,.8,.2,1); position: relative; outline: none;
+        }
+        .stats-bell-btn:hover {
+            background: linear-gradient(135deg, #dce6f8 0%, #c9d8f0 100%);
+            transform: scale(1.1); box-shadow: 0 4px 16px rgba(74,111,165,.2);
+        }
+        .stats-bell-btn i { font-size: 16px; color: #4a6fa5; }
+        .stats-bell-btn:hover i { animation: bellRing .6s ease; }
+        @keyframes bellRing {
+            0%,100%{transform:rotate(0)} 15%{transform:rotate(14deg)} 30%{transform:rotate(-12deg)}
+            45%{transform:rotate(8deg)} 60%{transform:rotate(-6deg)} 75%{transform:rotate(3deg)}
+        }
+        .stats-bell-dot {
+            position: absolute; top: 4px; right: 4px; width: 8px; height: 8px;
+            background: #e74c3c; border-radius: 50%; border: 2px solid #fff;
+            animation: dotPulse 2s infinite;
+        }
+        @keyframes dotPulse { 0%,100%{opacity:1} 50%{opacity:.4} }
 
-        .pf-dropdown-item i {
-            width: 18px;
-            text-align: center;
-            font-size: 15px;
-            color: #999;
-            transition: all 0.2s ease;
+        /* ===== Stats Dropdown Panel ===== */
+        .stats-dropdown {
+            position: absolute; top: calc(100% + 12px); right: 0; width: 340px;
+            background: #fff; border-radius: 20px;
+            border: 1px solid rgba(0,0,0,0.06);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
+            opacity: 0; visibility: hidden; transform: translateY(10px) scale(0.96);
+            transition: all 0.3s cubic-bezier(0.2,0.8,0.2,1); z-index: 1050;
+            overflow: hidden;
         }
+        .stats-dropdown.stats-show { opacity: 1; visibility: visible; transform: translateY(0) scale(1); }
+        .stats-dropdown-head {
+            padding: 16px 20px 12px; display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid #f0f0f0; background: linear-gradient(135deg, #f8faff 0%, #fff 100%);
+        }
+        .stats-dropdown-head h3 {
+            font-size: 15px; font-weight: 700; color: #2d3748;
+            display: flex; align-items: center; gap: 8px; margin: 0;
+        }
+        .stats-dropdown-head h3 i { color: #4a6fa5; font-size: 14px; }
+        .stats-dropdown-body {
+            padding: 14px 20px 18px; max-height: 420px; overflow-y: auto;
+        }
+        .stats-dropdown-body::-webkit-scrollbar { width: 4px; }
+        .stats-dropdown-body::-webkit-scrollbar-thumb { background: #ddd; border-radius: 4px; }
 
-        .pf-dropdown-item:hover i {
-            color: #FFB366;
+        /* -- User Info Card -- */
+        .sm-user-card {
+            display: flex; align-items: center; gap: 14px; padding: 14px 16px;
+            background: linear-gradient(135deg, #4a6fa5 0%, #6b8cbc 100%);
+            border-radius: 14px; color: #fff; margin-bottom: 14px;
         }
-
-        .pf-dropdown-divider {
-            height: 1px;
-            background: rgba(0, 0, 0, 0.04);
-            margin: 6px 0;
+        .sm-level-badge {
+            width: 42px; height: 42px; background: rgba(255,255,255,.2); border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; font-weight: 800;
         }
-
-        .pf-dropdown-item.pf-danger {
-            color: #e74c3c;
+        .sm-user-info h4 { font-size: 14px; font-weight: 600; margin: 0; }
+        .sm-user-info p { font-size: 11px; opacity: .85; margin: 2px 0 0; }
+        .sm-section-label {
+            font-size: 11px; font-weight: 600; color: #999; text-transform: uppercase;
+            letter-spacing: 1px; margin: 14px 0 8px;
         }
-
-        .pf-dropdown-item.pf-danger i {
-            color: #e74c3c;
+        .sm-ratio-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 4px; }
+        .sm-ratio-card {
+            padding: 12px; border-radius: 12px; text-align: center; border: 1px solid #f0f0f0;
         }
-
-        .pf-dropdown-item.pf-danger:hover {
-            background: #fef2f2;
-            color: #d32f2f;
+        .sm-ratio-card.sm-good { background: #f0faf0; }
+        .sm-ratio-card.sm-bad  { background: #fff5f5; }
+        .sm-ratio-num { font-size: 24px; font-weight: 800; line-height: 1.2; }
+        .sm-ratio-card.sm-good .sm-ratio-num { color: #388e3c; }
+        .sm-ratio-card.sm-bad  .sm-ratio-num { color: #d32f2f; }
+        .sm-ratio-label { font-size: 11px; color: #888; margin-top: 4px; }
+        .sm-chart { display: flex; flex-direction: column; gap: 6px; margin-bottom: 4px; }
+        .sm-chart-row { display: flex; align-items: center; gap: 8px; }
+        .sm-chart-date { width: 40px; font-size: 10px; color: #999; text-align: right; flex-shrink: 0; }
+        .sm-chart-bars { flex: 1; display: flex; gap: 3px; height: 16px; }
+        .sm-bar { height: 100%; border-radius: 4px; min-width: 2px; transition: width .6s cubic-bezier(.2,.8,.2,1); }
+        .sm-bar.sm-bar-done { background: linear-gradient(90deg,#66bb6a,#81c784); }
+        .sm-bar.sm-bar-delay { background: linear-gradient(90deg,#ef5350,#e57373); }
+        .sm-achievements { display: flex; flex-wrap: wrap; gap: 8px; }
+        .sm-ach-badge {
+            display: flex; align-items: center; gap: 6px; padding: 8px 12px;
+            background: #fafbfc; border: 1px solid #eee; border-radius: 10px;
+            transition: all .2s ease;
         }
-
-        .pf-login-link {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
+        .sm-ach-badge:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.06); }
+        .sm-ach-icon { font-size: 18px; }
+        .sm-ach-text h5 { font-size: 12px; font-weight: 600; color: #333; margin: 0; }
+        .sm-ach-text p { font-size: 10px; color: #999; margin: 0; }
+        .sm-loading { text-align: center; padding: 30px 0; color: #999; }
+        .sm-loading i { font-size: 20px; animation: smSpin 1s linear infinite; }
+        @keyframes smSpin { 0%{transform:rotate(0)} 100%{transform:rotate(360deg)} }
     </style>
 
     <div class="nav-container">
@@ -226,7 +202,6 @@
                         <img th:unless="${avatarUrl != null}" th:src="'https://api.dicebear.com/7.x/notionists/svg?seed=' + ${username}" alt="头像" class="pf-avatar-img pf-default-avatar" />
                         <span class="pf-tooltip" th:text="${username}">用户名</span>
                     </button>
-
                     <div class="pf-dropdown" id="pfDropdown">
                         <div class="pf-dropdown-header">
                             <div class="pf-dropdown-avatar">
@@ -253,6 +228,29 @@
                 </div>
             </li>
 
+            <!-- 铃铛在头像右边 -->
+            <li th:if="${loggedIn}">
+                <div class="stats-bell-area">
+                    <button class="stats-bell-btn" id="statsBellBtn" type="button" aria-label="数据统计">
+                        <i class="fas fa-bell"></i>
+                        <span class="stats-bell-dot" id="statsBellDot"></span>
+                    </button>
+                    <!-- 下拉面板 -->
+                    <div class="stats-dropdown" id="statsDropdown">
+                        <div class="stats-dropdown-head">
+                            <h3><i class="fas fa-chart-bar"></i> 我的数据统计</h3>
+                        </div>
+                        <div class="stats-dropdown-body" id="statsDropdownBody">
+                            <div class="sm-loading" id="statsLoading">
+                                <i class="fas fa-spinner"></i>
+                                <p style="margin-top:10px">加载中...</p>
+                            </div>
+                            <div id="statsContent" style="display:none"></div>
+                        </div>
+                    </div>
+                </div>
+            </li>
+
             <li th:unless="${loggedIn}">
                 <a href="/login" class="pf-login-link">
                     <i class="fas fa-sign-in-alt"></i> 登录
@@ -266,101 +264,154 @@
     <script th:if="${loggedIn}" th:inline="javascript">
         (function() {
             'use strict';
-
             var trigger   = document.getElementById('pfTrigger');
             var dropdown  = document.getElementById('pfDropdown');
             var changeBtn = document.getElementById('pfChangeAvatar');
             var logoutBtn = document.getElementById('pfLogout');
             var fileInput = document.getElementById('pfFileInput');
-
             if (!trigger || !dropdown) return;
 
-            // === 1. 切换下拉菜单 ===
             trigger.addEventListener('click', function(e) {
                 e.stopPropagation();
                 dropdown.classList.toggle('pf-show');
+                // 关闭铃铛下拉
+                var sd = document.getElementById('statsDropdown');
+                if (sd) sd.classList.remove('stats-show');
             });
-
             document.addEventListener('click', function(e) {
                 if (!dropdown.contains(e.target) && !trigger.contains(e.target)) {
                     dropdown.classList.remove('pf-show');
                 }
             });
-
-            // === 2. 修改头像：直接唤起本地文件夹 ===
             changeBtn.addEventListener('click', function() {
                 dropdown.classList.remove('pf-show');
                 fileInput.click();
             });
-
-            // === 3. 退出登录 ===
             logoutBtn.addEventListener('click', function() {
                 window.location.href = '/logout';
             });
-
-            // === 4. 监听选中文件，自动触发上传 ===
             fileInput.addEventListener('change', function() {
                 if (fileInput.files.length > 0) {
                     var file = fileInput.files[0];
-
-                    if (!file.type.startsWith('image/')) {
-                        alert('请选择图片文件');
-                        fileInput.value = ''; // 清空以便下次能选同一个文件
-                        return;
-                    }
-                    if (file.size > 5 * 1024 * 1024) {
-                        alert('图片大小不能超过 5MB');
-                        fileInput.value = '';
-                        return;
-                    }
-
+                    if (!file.type.startsWith('image/')) { alert('请选择图片文件'); fileInput.value = ''; return; }
+                    if (file.size > 5 * 1024 * 1024) { alert('图片大小不能超过 5MB'); fileInput.value = ''; return; }
                     uploadAvatar(file);
                 }
             });
-
-            // === 5. 静默上传接口逻辑 ===
             function uploadAvatar(file) {
-                // 给用户一个“正在上传”的轻微视觉反馈
                 trigger.classList.add('is-uploading');
-
                 var formData = new FormData();
                 formData.append('file', file);
-
-                fetch('/user/uploadAvatar', {
-                    method: 'POST',
-                    body: formData
-                })
+                fetch('/user/uploadAvatar', { method: 'POST', body: formData })
                     .then(function(res) { return res.json(); })
                     .then(function(result) {
                         if (result.code === 200 && result.data && result.data.avatarUrl) {
-                            var newUrl = result.data.avatarUrl;
-                            replaceAllAvatars(newUrl); // 瞬间替换全局图片
-                        } else {
-                            alert(result.msg || '上传失败');
-                        }
+                            replaceAllAvatars(result.data.avatarUrl);
+                        } else { alert(result.msg || '上传失败'); }
                     })
-                    .catch(function(err) {
-                        console.error('上传头像失败:', err);
-                        alert('网络异常，请稍后重试');
-                    })
-                    .finally(function() {
-                        // 恢复头像的常规状态，清空 input 以供下次使用
-                        trigger.classList.remove('is-uploading');
-                        fileInput.value = '';
-                    });
+                    .catch(function(err) { console.error('上传头像失败:', err); alert('网络异常，请稍后重试'); })
+                    .finally(function() { trigger.classList.remove('is-uploading'); fileInput.value = ''; });
             }
-
-            // === 6. 无感替换页面中所有的头像 ===
             function replaceAllAvatars(newUrl) {
-                var cacheBuster = '?t=' + Date.now();
-                var allAvatarImgs = document.querySelectorAll('.pf-avatar-img');
-                allAvatarImgs.forEach(function(img) {
-                    img.src = newUrl + cacheBuster;
-                    img.classList.remove('pf-default-avatar');
+                var cb = '?t=' + Date.now();
+                document.querySelectorAll('.pf-avatar-img').forEach(function(img) {
+                    img.src = newUrl + cb; img.classList.remove('pf-default-avatar');
                 });
             }
-
         })();
+    </script>
+
+    <!-- Stats Bell Dropdown Script -->
+    <script th:if="${loggedIn}">
+    (function() {
+        'use strict';
+        var bellBtn  = document.getElementById('statsBellBtn');
+        var panel    = document.getElementById('statsDropdown');
+        var loading  = document.getElementById('statsLoading');
+        var content  = document.getElementById('statsContent');
+        var bellDot  = document.getElementById('statsBellDot');
+        if (!bellBtn || !panel) return;
+
+        var loaded = false;
+
+        bellBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            panel.classList.toggle('stats-show');
+            // 关闭头像下拉
+            var pfd = document.getElementById('pfDropdown');
+            if (pfd) pfd.classList.remove('pf-show');
+            if (!loaded) { loadAllStats(); loaded = true; }
+        });
+        document.addEventListener('click', function(e) {
+            if (!panel.contains(e.target) && !bellBtn.contains(e.target)) {
+                panel.classList.remove('stats-show');
+            }
+        });
+
+        function loadAllStats() {
+            loading.style.display = '';
+            content.style.display = 'none';
+            Promise.all([
+                fetch('/stats/user').then(function(r){return r.json();}),
+                fetch('/stats/ratio').then(function(r){return r.json();}),
+                fetch('/stats/daily').then(function(r){return r.json();}),
+                fetch('/stats/achievements').then(function(r){return r.json();})
+            ]).then(function(res) {
+                var u = (res[0].code===200)?res[0].data:{score:0,level:1};
+                var r = (res[1].code===200)?res[1].data:{completed:0,procrastinated:0};
+                var d = (res[2].code===200)?res[2].data:{dates:[],completedTasks:[],procrastinationCounts:[]};
+                var a = (res[3].code===200)?res[3].data:[];
+                renderStats(u,r,d,a);
+                if (bellDot) bellDot.style.display='none';
+            }).catch(function() {
+                content.innerHTML='<div style="text-align:center;padding:20px;color:#999"><i class="fas fa-exclamation-triangle" style="font-size:24px;color:#e74c3c;display:block;margin-bottom:8px"></i>加载失败</div>';
+                loading.style.display='none'; content.style.display='';
+            });
+        }
+
+        function renderStats(user,ratio,daily,ach) {
+            var h='';
+            h+='<div class="sm-user-card"><div class="sm-level-badge">Lv'+(user.level||1)+'</div>';
+            h+='<div class="sm-user-info"><h4>积分: '+(user.score||0)+'</h4>';
+            h+='<p>等级 '+(user.level||1)+' · 继续努力！</p></div></div>';
+
+            h+='<div class="sm-section-label">📊 完成比例</div>';
+            h+='<div class="sm-ratio-row">';
+            h+='<div class="sm-ratio-card sm-good"><div class="sm-ratio-num">'+(ratio.completed||0)+'</div><div class="sm-ratio-label">已完成</div></div>';
+            h+='<div class="sm-ratio-card sm-bad"><div class="sm-ratio-num">'+(ratio.procrastinated||0)+'</div><div class="sm-ratio-label">已拖延</div></div>';
+            h+='</div>';
+
+            var dates=daily.dates||[], comp=daily.completedTasks||[], proc=daily.procrastinationCounts||[];
+            if(dates.length>0){
+                var mx=1;
+                for(var i=0;i<dates.length;i++){var s=(comp[i]||0)+(proc[i]||0);if(s>mx)mx=s;}
+                h+='<div class="sm-section-label">📈 近7天</div><div class="sm-chart">';
+                for(var j=0;j<dates.length;j++){
+                    var cw=Math.max(((comp[j]||0)/mx)*100,(comp[j]||0)>0?8:0);
+                    var pw=Math.max(((proc[j]||0)/mx)*100,(proc[j]||0)>0?8:0);
+                    h+='<div class="sm-chart-row"><span class="sm-chart-date">'+dates[j]+'</span><div class="sm-chart-bars">';
+                    if((comp[j]||0)>0)h+='<div class="sm-bar sm-bar-done" style="width:'+cw+'%"></div>';
+                    if((proc[j]||0)>0)h+='<div class="sm-bar sm-bar-delay" style="width:'+pw+'%"></div>';
+                    if((comp[j]||0)===0&&(proc[j]||0)===0)h+='<div style="font-size:10px;color:#ccc;line-height:16px">—</div>';
+                    h+='</div></div>';
+                }
+                h+='</div>';
+                h+='<div style="display:flex;gap:12px;font-size:10px;color:#999;margin-bottom:2px">';
+                h+='<span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#66bb6a;margin-right:3px"></span>完成</span>';
+                h+='<span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#ef5350;margin-right:3px"></span>拖延</span></div>';
+            }
+
+            if(ach&&ach.length>0){
+                h+='<div class="sm-section-label">🏅 成就</div><div class="sm-achievements">';
+                for(var k=0;k<ach.length;k++){
+                    h+='<div class="sm-ach-badge"><span class="sm-ach-icon">'+(ach[k].icon||'🌟')+'</span>';
+                    h+='<div class="sm-ach-text"><h5>'+(ach[k].name||'')+'</h5><p>'+(ach[k].description||'')+'</p></div></div>';
+                }
+                h+='</div>';
+            }
+            content.innerHTML=h; loading.style.display='none'; content.style.display='';
+        }
+    })();
     </script>
 
 </nav>
