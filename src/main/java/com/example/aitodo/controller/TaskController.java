@@ -249,7 +249,7 @@ public class TaskController {
             }
 
             List<Task> allUserTasks = taskService.getTasksByUserId(currentUserId);
-            List<Task> filteredTasks = allUserTasks.stream()
+            List<Task> filteredTasks = allUserTasks .stream()
                     .filter(task -> status.equals(task.getStatus()))
                     .toList();
             return ResponseEntity.ok(filteredTasks);
