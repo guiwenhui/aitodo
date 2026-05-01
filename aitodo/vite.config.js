@@ -1,18 +1,14 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import { resolve } from 'path' // 引入 path 模块
 
 export default defineConfig({
     base: '/vue/',
     plugins: [vue()],
 
     build: {
-        // 🌟 核心修复：使用相对路径！
-        // 这样无论你的项目文件夹叫什么名字、拷贝到哪台电脑，都能精准打包到当前的 Spring Boot 目录下！
+        // 打包输出到 Spring Boot 的静态资源目录
         outDir: '../src/main/resources/static/vue',
-
         emptyOutDir: true,
-
         rollupOptions: {
             output: {
                 entryFileNames: 'assets/index.js',
@@ -25,10 +21,30 @@ export default defineConfig({
     server: {
         port: 5173,
         proxy: {
+            // 统一代理所有后端 API 路径到 Spring Boot
             '/api': {
                 target: 'http://localhost:8080',
                 changeOrigin: true,
-                rewrite: (path) => path.replace(/^\/api/, '/api'),
+            },
+            '/task': {
+                target: 'http://localhost:8080',
+                changeOrigin: true,
+            },
+            '/stats': {
+                target: 'http://localhost:8080',
+                changeOrigin: true,
+            },
+            '/user': {
+                target: 'http://localhost:8080',
+                changeOrigin: true,
+            },
+            '/uploads': {
+                target: 'http://localhost:8080',
+                changeOrigin: true,
+            },
+            '/logout': {
+                target: 'http://localhost:8080',
+                changeOrigin: true,
             },
         },
     },

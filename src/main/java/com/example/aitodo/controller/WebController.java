@@ -207,4 +207,20 @@ public class WebController {
         // 3. 返回你创建的 focus-flow.html 模板
         return "focus-flow";
     }
+
+    /**
+     * 🔧 Vue SPA Catch-All 路由
+     * 
+     * 当用户直接访问 /vue/leaderboard、/vue/tasks 等 Vue Router 管理的路径时，
+     * Spring Boot 不会找到对应的静态文件，会返回 404。
+     * 此 catch-all 将所有 /vue 子路径（排除带 . 的真实静态资源如 .js .css）
+     * 转发到 SPA 的 index.html，让 Vue Router 在客户端处理路由。
+     * 
+     * 注意：只匹配单层路径（如 /vue/tasks），不匹配深层路径（如 /vue/assets/index.js），
+     * 避免拦截静态资源请求。
+     */
+    @GetMapping("/vue/{path:[^\\.]*}")
+    public String vueSpaForward() {
+        return "forward:/vue/index.html";
+    }
 }

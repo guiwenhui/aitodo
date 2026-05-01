@@ -1,331 +1,252 @@
 <template>
-  <div class="focus-flow-layout" :class="currentMode">
-
-    <div class="ambient-breathe"></div>
-
-    <main class="focus-container">
-
-      <header class="task-focus-area">
-        <p class="section-label">当前专注目标</p>
-        <div class="task-selector" v-if="!isRunning && !activeTask">
-          <input
-              type="text"
-              v-model="newTaskInput"
-              placeholder="写下你接下来要专注的一件事..."
-              @keyup.enter="setTask"
-              class="clean-input"
-          />
-        </div>
-        <div class="active-task-display" v-else>
-          <h2 class="task-title">{{ activeTask || '未命名任务' }}</h2>
-          <button v-if="!isRunning" class="btn-text" @click="clearTask">重新选择</button>
-        </div>
+  <div class="warnings-page">
+    <div class="ambient-blur"></div>
+    <div class="warnings-container">
+      <header class="page-header">
+        <h1 class="title">AI 认知洞察</h1>
+        <p class="subtitle">仅显示最近3天的通知与状态分析</p>
       </header>
 
-      <section class="timer-section">
-        <div class="time-display" :class="{ 'is-running': isRunning }">
-          <span class="digits">{{ formattedMinutes }}</span>
-          <span class="colon">:</span>
-          <span class="digits">{{ formattedSeconds }}</span>
-        </div>
-      </section>
+      <div v-if="loading" class="loading-state">
+        <i class="fas fa-circle-notch fa-spin"></i>
+        <span>正在分析数据...</span>
+      </div>
 
-      <section class="controls-section">
-        <button class="btn-primary huge-btn" @click="toggleTimer">
-          <i :class="isRunning ? 'fas fa-pause' : 'fas fa-play'"></i>
-          {{ isRunning ? '暂停心流' : '进入心流' }}
-        </button>
+      <div v-else-if="filteredWarnings.length === 0" class="empty-state">
+        <i class="fas fa-check-circle"></i>
+        <p>太棒了！最近3天没有收到任何拖延警告。</p>
+      </div>
 
-        <div class="secondary-controls">
-          <button class="btn-icon" @click="resetTimer" title="重置时间">
-            <i class="fas fa-undo"></i>
-          </button>
-
-          <div class="mode-switch">
-            <button
-                class="mode-btn"
-                :class="{ active: currentMode === 'focus' }"
-                @click="switchMode('focus')"
-            >
-              专注 (25m)
-            </button>
-            <button
-                class="mode-btn"
-                :class="{ active: currentMode === 'break' }"
-                @click="switchMode('break')"
-            >
-              短休 (5m)
-            </button>
+      <div v-else class="warnings-list">
+        <div 
+          v-for="warning in filteredWarnings" 
+          :key="warning.taskId" 
+          class="warning-card"
+          :class="warning.warningStyle"
+        >
+          <div class="warning-indicator"></div>
+          <div class="warning-content">
+            <div class="warning-header">
+              <span class="task-title">{{ warning.title }}</span>
+              <span class="task-time">{{ formatTime(warning.deadline) }}</span>
+            </div>
+            <p class="warning-text">{{ warning.aiWarning }}</p>
           </div>
-
-          <button class="btn-icon" @click="toggleWhiteNoise" :class="{ 'is-active': whiteNoiseOn }" title="白噪音 (模拟)">
-            <i class="fas fa-headphones-alt"></i>
-          </button>
         </div>
-      </section>
-
-    </main>
-
-    <footer class="focus-footer">
-      <p v-if="currentMode === 'focus'">“不要等状态来了才开始，开始之后状态自然会来。”</p>
-      <p v-else>“休息是为了走得更远。站起来，喝杯水。”</p>
-    </footer>
-
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onUnmounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import axios from 'axios'
 
-// --- 状态定义 ---
-const currentMode = ref('focus') // 'focus' | 'break'
-const FOCUS_TIME = 25 * 60
-const BREAK_TIME = 5 * 60
+const warnings = ref([])
+const loading = ref(true)
 
-const timeLeft = ref(FOCUS_TIME)
-const isRunning = ref(false)
-let timerInterval = null
-
-// 任务状态
-const newTaskInput = ref('')
-const activeTask = ref('')
-
-// 白噪音模拟状态
-const whiteNoiseOn = ref(false)
-
-// --- 计算属性 ---
-const formattedMinutes = computed(() => {
-  return String(Math.floor(timeLeft.value / 60)).padStart(2, '0')
-})
-const formattedSeconds = computed(() => {
-  return String(timeLeft.value % 60).padStart(2, '0')
+// 过滤最近 3 天的警告
+const filteredWarnings = computed(() => {
+  const now = new Date()
+  const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000)
+  
+  return warnings.value.filter(w => {
+    if (!w.deadline) return false
+    const taskDate = new Date(w.deadline.replace(' ', 'T'))
+    return taskDate >= threeDaysAgo
+  }).sort((a, b) => new Date(b.deadline.replace(' ', 'T')) - new Date(a.deadline.replace(' ', 'T')))
 })
 
-// --- 交互逻辑 ---
-const setTask = () => {
-  if (newTaskInput.value.trim()) {
-    activeTask.value = newTaskInput.value.trim()
-    newTaskInput.value = ''
-  }
-}
-
-const clearTask = () => {
-  activeTask.value = ''
-  if (isRunning.value) toggleTimer()
-}
-
-const toggleTimer = () => {
-  if (isRunning.value) {
-    clearInterval(timerInterval)
-    isRunning.value = false
-  } else {
-    // 强制要求输入任务才能专注
-    if (!activeTask.value && currentMode.value === 'focus') {
-      activeTask.value = '未命名专注时刻'
+const fetchWarnings = async () => {
+  try {
+    const res = await axios.get('/task/my-ai-warnings')
+    // 后端返回的是 { aiWarnings: [...] }，或者被统一的 Result 包装了 { data: { aiWarnings: [...] } }
+    let data = []
+    if (res.data?.aiWarnings) {
+      data = res.data.aiWarnings
+    } else if (res.data?.data?.aiWarnings) {
+      data = res.data.data.aiWarnings
+    } else if (Array.isArray(res.data)) {
+      data = res.data
     }
-
-    isRunning.value = true
-    timerInterval = setInterval(() => {
-      if (timeLeft.value > 0) {
-        timeLeft.value--
-      } else {
-        // 倒计时结束
-        clearInterval(timerInterval)
-        isRunning.value = false
-        playDingSound() // 理论上可以播放一个提示音
-
-        // 自动切换模式
-        if (currentMode.value === 'focus') {
-          switchMode('break')
-        } else {
-          switchMode('focus')
-        }
-      }
-    }, 1000)
+    warnings.value = data
+  } catch (error) {
+    console.error('Failed to load warnings:', error)
+  } finally {
+    loading.value = false
   }
 }
 
-const resetTimer = () => {
-  clearInterval(timerInterval)
-  isRunning.value = false
-  timeLeft.value = currentMode.value === 'focus' ? FOCUS_TIME : BREAK_TIME
+const formatTime = (dateStr) => {
+  if (!dateStr) return '未知时间'
+  const d = new Date(dateStr.replace(' ', 'T'))
+  if (isNaN(d.getTime())) return dateStr
+  return `${d.getMonth() + 1}月${d.getDate()}日 ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
 }
 
-const switchMode = (mode) => {
-  if (isRunning.value) {
-    if(!confirm('计时正在进行中，切换模式将重置时间，确定吗？')) return
-  }
-  clearInterval(timerInterval)
-  isRunning.value = false
-  currentMode.value = mode
-  timeLeft.value = mode === 'focus' ? FOCUS_TIME : BREAK_TIME
-}
-
-const toggleWhiteNoise = () => {
-  whiteNoiseOn.value = !whiteNoiseOn.value
-  // 这里未来可以接真实的 HTML5 Audio API 播放雨声/咖啡馆声音
-}
-
-const playDingSound = () => {
-  console.log('Ding! Timer finished.')
-}
-
-onUnmounted(() => {
-  if (timerInterval) clearInterval(timerInterval)
+onMounted(() => {
+  fetchWarnings()
 })
 </script>
 
 <style scoped>
-/* =======================================================
-   Clean Focus Flow - 极致极简白静大厂风
-   ======================================================= */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@400;700&display=swap');
-
-.focus-flow-layout {
-  min-height: calc(100vh - 80px);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+/* 简约高级风 - 浅色毛玻璃背景 */
+.warnings-page {
+  min-height: 100vh;
+  background-color: #FAFAFA;
   position: relative;
-  font-family: 'Inter', -apple-system, sans-serif;
   overflow: hidden;
-  transition: background-color 1s ease;
+  padding: 40px 20px;
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
 }
 
-/* 根据状态改变底层背景色 */
-.focus-flow-layout.focus { background-color: #FAFAFA; color: #0F172A; }
-.focus-flow-layout.break { background-color: #F0FDF4; color: #064E3B; } /* 休息时变为极浅治愈绿 */
-
-/* 1. 缓慢的正念呼吸背景 (极其克制的光晕) */
-.ambient-breathe {
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  width: 60vw; height: 60vw;
-  border-radius: 50%;
-  filter: blur(120px);
+.ambient-blur {
+  position: fixed;
+  top: -100px;
+  right: -100px;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(99,102,241,0.05) 0%, rgba(255,255,255,0) 70%);
   z-index: 0;
-  opacity: 0.3;
   pointer-events: none;
-  animation: breathe 8s ease-in-out infinite alternate;
-}
-.focus .ambient-breathe { background: radial-gradient(circle, rgba(226, 232, 240, 0.8) 0%, rgba(250, 250, 250, 0) 70%); }
-.break .ambient-breathe { background: radial-gradient(circle, rgba(167, 243, 208, 0.6) 0%, rgba(240, 253, 244, 0) 70%); }
-
-@keyframes breathe {
-  0% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.2; }
-  100% { transform: translate(-50%, -50%) scale(1.1); opacity: 0.5; }
 }
 
-/* 核心容器 */
-.focus-container {
+.warnings-container {
+  max-width: 700px;
+  margin: 0 auto;
   position: relative;
-  z-index: 10;
+  z-index: 1;
+}
+
+.page-header {
+  margin-bottom: 40px;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 8px;
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  font-size: 1rem;
+  color: #6B7280;
+}
+
+/* 状态展示 */
+.loading-state, .empty-state {
+  text-align: center;
+  padding: 80px 20px;
+  color: #9CA3AF;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.03);
+  backdrop-filter: blur(12px);
+}
+
+.loading-state i, .empty-state i {
+  font-size: 2rem;
+  margin-bottom: 16px;
+  display: block;
+}
+
+.empty-state i {
+  color: #10B981;
+  opacity: 0.8;
+}
+
+.empty-state p {
+  font-size: 1.05rem;
+  color: #4B5563;
+}
+
+/* 警告卡片列表 */
+.warnings-list {
   display: flex;
   flex-direction: column;
+  gap: 16px;
+}
+
+.warning-card {
+  display: flex;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.warning-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+}
+
+/* 指示条 */
+.warning-indicator {
+  width: 4px;
+  flex-shrink: 0;
+  background: #E5E7EB;
+}
+
+.warning-content {
+  padding: 20px 24px;
+  flex: 1;
+}
+
+.warning-header {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  width: 100%;
-  max-width: 600px;
-  padding: 40px 24px;
+  margin-bottom: 12px;
 }
 
-/* 2. 顶部任务区 */
-.task-focus-area {
-  text-align: center;
-  margin-bottom: 60px;
-  width: 100%;
-}
-.section-label { font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 2px; color: #94A3B8; margin-bottom: 16px; }
-
-.clean-input {
-  width: 100%; max-width: 400px;
-  background: transparent;
-  border: none; border-bottom: 2px solid #E2E8F0;
-  padding: 12px 0;
-  font-size: 1.2rem; font-weight: 500; text-align: center; color: inherit;
-  transition: border-color 0.3s;
-}
-.clean-input:focus { outline: none; border-bottom-color: #0F172A; }
-.clean-input::placeholder { color: #CBD5E1; font-weight: 400; }
-.break .clean-input:focus { border-bottom-color: #059669; }
-
-.active-task-display { display: flex; flex-direction: column; align-items: center; gap: 12px; }
-.task-title { font-size: 1.5rem; font-weight: 600; margin: 0; line-height: 1.4; }
-.btn-text { background: transparent; border: none; font-size: 0.85rem; font-weight: 500; color: #94A3B8; cursor: pointer; transition: color 0.2s; }
-.btn-text:hover { color: #64748B; }
-
-/* 3. 巨型计时器排版 */
-.timer-section { margin-bottom: 80px; }
-.time-display {
-  font-family: 'Roboto Mono', monospace;
-  font-size: 8rem; /* 极致巨大的字号 */
-  font-weight: 700;
-  line-height: 1;
-  letter-spacing: -6px;
-  display: flex; align-items: center; justify-content: center;
-  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-}
-/* 当计时开始时，数字微微放大，沉浸感增强 */
-.time-display.is-running { transform: scale(1.05); text-shadow: 0 20px 40px rgba(0,0,0,0.05); }
-
-.colon { margin: 0 -10px; opacity: 0.3; animation: blink 2s infinite; }
-@keyframes blink { 0%, 100% { opacity: 0.3; } 50% { opacity: 0; } }
-
-/* 4. 操作控制台 */
-.controls-section { display: flex; flex-direction: column; align-items: center; gap: 32px; width: 100%; }
-
-.huge-btn {
-  display: flex; align-items: center; gap: 12px;
-  background: #0F172A; color: #FFF;
-  border: none; border-radius: 999px;
-  padding: 20px 48px;
-  font-size: 1.2rem; font-weight: 600;
-  cursor: pointer;
-  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.2);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-.huge-btn:hover { transform: translateY(-4px); box-shadow: 0 20px 35px -10px rgba(15, 23, 42, 0.3); }
-.break .huge-btn { background: #059669; box-shadow: 0 10px 25px -5px rgba(5, 150, 105, 0.2); }
-.break .huge-btn:hover { box-shadow: 0 20px 35px -10px rgba(5, 150, 105, 0.3); }
-
-.secondary-controls {
-  display: flex; align-items: center; justify-content: center; gap: 24px;
-  background: #FFFFFF; padding: 8px 16px; border-radius: 999px;
-  border: 1px solid #F1F5F9; box-shadow: 0 4px 12px rgba(0,0,0,0.02);
-}
-.break .secondary-controls { background: rgba(255,255,255,0.6); border-color: #D1FAE5; }
-
-.btn-icon {
-  width: 40px; height: 40px; border-radius: 50%;
-  border: none; background: transparent; color: #94A3B8;
-  font-size: 1.1rem; cursor: pointer; transition: all 0.2s;
-  display: flex; align-items: center; justify-content: center;
-}
-.btn-icon:hover { background: #F1F5F9; color: #0F172A; }
-.btn-icon.is-active { color: #6366F1; background: #EEF2FF; }
-
-.mode-switch { display: flex; align-items: center; background: #F8FAFC; border-radius: 999px; padding: 4px; }
-.break .mode-switch { background: rgba(255,255,255,0.5); }
-.mode-btn {
-  border: none; background: transparent; color: #64748B;
-  padding: 8px 16px; border-radius: 999px;
-  font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s;
-}
-.mode-btn.active { background: #FFFFFF; color: #0F172A; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
-.break .mode-btn.active { color: #064E3B; }
-
-/* 5. 底部激励 */
-.focus-footer {
-  position: absolute; bottom: 40px;
-  text-align: center; width: 100%;
-  font-size: 0.9rem; color: #94A3B8;
-  font-style: italic; letter-spacing: 0.5px;
+.task-title {
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: #111827;
 }
 
-@media (max-width: 640px) {
-  .time-display { font-size: 5rem; letter-spacing: -2px; }
-  .huge-btn { padding: 16px 32px; font-size: 1.1rem; }
-  .secondary-controls { flex-wrap: wrap; }
+.task-time {
+  font-size: 0.85rem;
+  color: #9CA3AF;
+}
+
+.warning-text {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #4B5563;
+  margin: 0;
+}
+
+/* 风格差异化 (低饱和度、极简高级) */
+.urgent_warning .warning-indicator {
+  background: #F87171; /* 柔和红 */
+}
+.urgent_warning {
+  background: linear-gradient(to right, rgba(254, 242, 242, 0.5), rgba(255, 255, 255, 0.8));
+  border-color: rgba(248, 113, 113, 0.1);
+}
+
+.overdue .warning-indicator {
+  background: #9CA3AF; /* 灰色 */
+}
+.overdue .task-title {
+  color: #6B7280;
+  text-decoration: line-through;
+}
+
+.delayed_humorous .warning-indicator {
+  background: #FBBF24; /* 柔和黄 */
+}
+.delayed_humorous {
+  background: linear-gradient(to right, rgba(255, 251, 235, 0.5), rgba(255, 255, 255, 0.8));
+}
+
+.completed .warning-indicator {
+  background: #34D399; /* 柔和绿 */
 }
 </style>

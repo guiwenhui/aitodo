@@ -414,6 +414,38 @@
     })();
     </script>
 
+    <!-- 🌟 全局键盘快捷键 (所有页面生效) -->
+    <script>
+    (function() {
+        'use strict';
+        function isTyping(e) {
+            var tag = e.target.tagName;
+            if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return true;
+            if (e.target.isContentEditable) return true;
+            return false;
+        }
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey || e.altKey || e.metaKey) return;
+            if (isTyping(e)) return;
+            var key = e.key.toLowerCase();
+            if (key === 'n') {
+                e.preventDefault();
+                window.location.href = '/tasks';
+            } else if (key === '/') {
+                e.preventDefault();
+                var selectors = ['#ai-input','#agentInput','.ai-chat-input input','.ai-chat-input textarea'];
+                for (var i = 0; i < selectors.length; i++) {
+                    var el = document.querySelector(selectors[i]);
+                    if (el) { el.focus(); return; }
+                }
+            } else if (key === 'f') {
+                e.preventDefault();
+                window.location.href = '/focus-flow';
+            }
+        });
+    })();
+    </script>
+
 </nav>
 
 </body>

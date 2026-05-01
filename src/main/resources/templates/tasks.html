@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" th:href="@{/css/style.css}">
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
 
     <style>
         :root {
@@ -122,7 +123,48 @@
         .ai-header { color: #D97706; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
         .ai-text { color: #92400E; font-size: 0.95rem; line-height: 1.6; }
 
-        @media (max-width: 960px) { .workspace-container { grid-template-columns: 1fr; } .task-actions { opacity: 1; } }
+        @media (max-width: 960px) { .workspace-container { grid-template-columns: 1fr; } .task-actions { opacity: 1; } .matrix-grid { grid-template-columns: 1fr; } }
+
+        /* 拖拽手柄 */
+        .drag-handle { color: #D1D5DB; cursor: grab; font-size: 0.9rem; margin-right: 6px; transition: color 0.2s; }
+        .drag-handle:hover { color: #9CA3AF; }
+        .drag-handle:active { cursor: grabbing; }
+        .sortable-ghost { opacity: 0.35; background: #EEF2FF !important; border-color: #4F46E5 !important; }
+        .sortable-chosen { box-shadow: 0 8px 25px rgba(0,0,0,0.1); }
+
+        /* 视图切换 */
+        .view-toggle { display: flex; gap: 4px; background: #F3F4F6; border-radius: 10px; padding: 4px; }
+        .view-toggle-btn { width: 36px; height: 36px; border: none; border-radius: 8px; background: transparent; color: #9CA3AF; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.95rem; transition: all 0.2s; }
+        .view-toggle-btn:hover { color: #6B7280; }
+        .view-toggle-btn.active { background: #fff; color: #111827; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+
+        .header-row { display: flex; justify-content: space-between; align-items: flex-start; }
+
+        /* 四象限 */
+        .matrix-view { display: none; }
+        .matrix-view.active { display: block; }
+        .list-view.active { display: block; }
+        .list-view { display: none; }
+
+        .matrix-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 20px; }
+        .matrix-quadrant { background: #fff; border-radius: 16px; border: 1px solid #F3F4F6; box-shadow: 0 1px 3px rgba(0,0,0,0.04); min-height: 180px; display: flex; flex-direction: column; overflow: hidden; }
+        .quadrant-header { padding: 14px 16px; display: flex; align-items: center; gap: 8px; }
+        .quadrant-icon { font-size: 1rem; }
+        .quadrant-title { font-size: 0.9rem; font-weight: 700; color: #374151; flex: 1; }
+        .quadrant-count { background: rgba(0,0,0,0.06); color: #6B7280; padding: 2px 8px; border-radius: 10px; font-size: 0.7rem; font-weight: 600; }
+        .quadrant-body { flex: 1; padding: 12px; display: flex; flex-direction: column; gap: 8px; min-height: 60px; }
+        .quadrant-empty { padding: 20px; text-align: center; color: #D1D5DB; font-size: 0.85rem; }
+
+        .q-red .quadrant-header    { background: linear-gradient(135deg, #FEF2F2, #FFF); border-bottom: 2px solid #FCA5A5; }
+        .q-yellow .quadrant-header { background: linear-gradient(135deg, #FFFBEB, #FFF); border-bottom: 2px solid #FCD34D; }
+        .q-blue .quadrant-header   { background: linear-gradient(135deg, #EFF6FF, #FFF); border-bottom: 2px solid #93C5FD; }
+        .q-gray .quadrant-header   { background: linear-gradient(135deg, #F9FAFB, #FFF); border-bottom: 2px solid #D1D5DB; }
+
+        .matrix-task-card { background: #F9FAFB; border: 1px solid #E5E7EB; border-radius: 10px; padding: 12px 14px; cursor: grab; transition: all 0.2s; }
+        .matrix-task-card:hover { background: #fff; box-shadow: 0 4px 8px rgba(0,0,0,0.04); transform: translateY(-1px); }
+        .matrix-task-card:active { cursor: grabbing; }
+        .matrix-task-title { font-size: 0.9rem; font-weight: 600; color: #111827; margin-bottom: 4px; }
+        .matrix-task-meta { font-size: 0.75rem; color: #9CA3AF; }
 
         .toast-container { position: fixed; top: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 12px; }
         .modern-toast { background: var(--bg-surface); padding: 16px 20px; border-radius: var(--radius-md); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); display: flex; align-items: center; gap: 12px; font-size: 0.95rem; font-weight: 500; transform: translateX(120%); transition: transform 0.4s; border: 1px solid var(--border-color); color: var(--text-primary); }
@@ -147,8 +189,20 @@
 
 <main class="workspace-container">
     <header class="workspace-header">
-        <h1 class="page-title">工作台</h1>
-        <p class="page-subtitle">按状态聚焦你的任务，击破拖延症。</p>
+        <div class="header-row">
+            <div>
+                <h1 class="page-title">工作台</h1>
+                <p class="page-subtitle">按状态聚焦你的任务，击破拖延症。</p>
+            </div>
+            <div class="view-toggle" id="viewToggle">
+                <button class="view-toggle-btn active" data-view="list" title="列表视图" onclick="switchView('list')">
+                    <i class="fas fa-list"></i>
+                </button>
+                <button class="view-toggle-btn" data-view="matrix" title="四象限视图" onclick="switchView('matrix')">
+                    <i class="fas fa-th-large"></i>
+                </button>
+            </div>
+        </div>
     </header>
 
     <div class="task-board">
@@ -177,6 +231,7 @@
                  th:data-deadline="${task.deadline != null ? #temporals.format(task.deadline, 'yyyy-MM-dd HH:mm:ss') : ''}">
 
                 <div class="card-left">
+                    <i class="fas fa-grip-vertical drag-handle"></i>
                     <i class="fas fa-circle-notch task-icon" th:if="${task.status != 1}"></i>
                     <i class="fas fa-check-circle task-icon" th:if="${task.status == 1}" style="color: #10B981;"></i>
                     <div>
@@ -208,6 +263,28 @@
                         </button>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 四象限视图 -->
+    <div class="matrix-view" id="matrixView">
+        <div class="matrix-grid">
+            <div class="matrix-quadrant q-red" id="quadrant-q1">
+                <div class="quadrant-header"><span class="quadrant-icon">🔴</span><span class="quadrant-title">重要且紧急</span><span class="quadrant-count" id="qcount-q1">0</span></div>
+                <div class="quadrant-body" id="qbody-q1"></div>
+            </div>
+            <div class="matrix-quadrant q-yellow" id="quadrant-q2">
+                <div class="quadrant-header"><span class="quadrant-icon">🟡</span><span class="quadrant-title">重要不紧急</span><span class="quadrant-count" id="qcount-q2">0</span></div>
+                <div class="quadrant-body" id="qbody-q2"></div>
+            </div>
+            <div class="matrix-quadrant q-blue" id="quadrant-q3">
+                <div class="quadrant-header"><span class="quadrant-icon">🔵</span><span class="quadrant-title">不重要但紧急</span><span class="quadrant-count" id="qcount-q3">0</span></div>
+                <div class="quadrant-body" id="qbody-q3"></div>
+            </div>
+            <div class="matrix-quadrant q-gray" id="quadrant-q4">
+                <div class="quadrant-header"><span class="quadrant-icon">⚪</span><span class="quadrant-title">不重要不紧急</span><span class="quadrant-count" id="qcount-q4">0</span></div>
+                <div class="quadrant-body" id="qbody-q4"></div>
             </div>
         </div>
     </div>
@@ -443,11 +520,136 @@
             });
         }
 
+        // ========== 视图切换 ==========
+        let currentView = 'list';
+
+        window.switchView = function(view) {
+            currentView = view;
+            document.querySelectorAll('.view-toggle-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector(`[data-view="${view}"]`)?.classList.add('active');
+
+            const taskBoard = document.querySelector('.task-board');
+            const matrixView = document.getElementById('matrixView');
+
+            if (view === 'list') {
+                taskBoard.style.display = '';
+                matrixView.style.display = 'none';
+            } else {
+                taskBoard.style.display = 'none';
+                matrixView.style.display = 'block';
+                populateMatrix();
+            }
+        };
+
+        // ========== 四象限填充 ==========
+        const statusToQuadrant = { 3: 'q1', 0: 'q2', 2: 'q3', 1: 'q4' };
+
+        function populateMatrix() {
+            ['q1','q2','q3','q4'].forEach(q => {
+                const body = document.getElementById('qbody-' + q);
+                body.innerHTML = '';
+            });
+
+            document.querySelectorAll('.task-card').forEach(card => {
+                const status = parseInt(card.getAttribute('data-status'));
+                const qId = statusToQuadrant[status] || 'q4';
+                const body = document.getElementById('qbody-' + qId);
+                const title = card.querySelector('.task-title')?.innerText || '未知';
+                const taskId = card.getAttribute('data-id');
+                const deadlineEl = card.querySelector('.task-meta');
+                const meta = deadlineEl ? deadlineEl.innerText.trim() : '';
+
+                const el = document.createElement('div');
+                el.className = 'matrix-task-card';
+                el.setAttribute('data-id', taskId);
+                el.setAttribute('data-status', status);
+                el.innerHTML = `<div class="matrix-task-title">${title}</div><div class="matrix-task-meta">${meta}</div>`;
+                body.appendChild(el);
+            });
+
+            // 更新计数
+            ['q1','q2','q3','q4'].forEach(q => {
+                const count = document.getElementById('qbody-' + q).children.length;
+                const countEl = document.getElementById('qcount-' + q);
+                if (countEl) countEl.innerText = count;
+            });
+
+            // 初始化四象限的 Sortable 跨区域拖拽
+            initMatrixSortable();
+        }
+
+        // ========== SortableJS 初始化 ==========
+        let listSortable = null;
+        const matrixSortables = [];
+
+        function initListSortable() {
+            const container = document.getElementById('taskListContainer');
+            if (!container || listSortable) return;
+            listSortable = new Sortable(container, {
+                handle: '.drag-handle',
+                animation: 250,
+                ghostClass: 'sortable-ghost',
+                chosenClass: 'sortable-chosen',
+                filter: '.empty-state',
+                onEnd: function(evt) {
+                    const items = container.querySelectorAll('.task-card');
+                    const newOrder = Array.from(items).map((el, i) => ({
+                        id: el.getAttribute('data-id'),
+                        sortOrder: i
+                    }));
+                    console.log('[列表拖拽] 新顺序:', newOrder);
+                    // TODO: fetch('/task/reorder', { method: 'POST', body: JSON.stringify(newOrder) })
+                }
+            });
+        }
+
+        function initMatrixSortable() {
+            matrixSortables.forEach(s => s.destroy());
+            matrixSortables.length = 0;
+            const quadrantMap = { 'qbody-q1': 3, 'qbody-q2': 0, 'qbody-q3': 2, 'qbody-q4': 1 };
+
+            ['qbody-q1','qbody-q2','qbody-q3','qbody-q4'].forEach(bodyId => {
+                const el = document.getElementById(bodyId);
+                if (!el) return;
+                const s = new Sortable(el, {
+                    group: 'matrix',
+                    animation: 200,
+                    ghostClass: 'sortable-ghost',
+                    onEnd: function(evt) {
+                        const movedCard = evt.item;
+                        const targetBody = evt.to.id;
+                        const newStatus = quadrantMap[targetBody];
+                        const taskId = movedCard.getAttribute('data-id');
+                        const title = movedCard.querySelector('.matrix-task-title')?.innerText || '';
+
+                        movedCard.setAttribute('data-status', newStatus);
+                        // 同步原始列表卡片的 status
+                        const origCard = document.querySelector(`.task-card[data-id="${taskId}"]`);
+                        if (origCard) origCard.setAttribute('data-status', newStatus);
+
+                        console.log(`[四象限拖拽] 任务"${title}" 移至 ${targetBody}, 新status=${newStatus}`);
+
+                        // 更新计数
+                        ['q1','q2','q3','q4'].forEach(q => {
+                            const count = document.getElementById('qbody-' + q).children.length;
+                            const countEl = document.getElementById('qcount-' + q);
+                            if (countEl) countEl.innerText = count;
+                        });
+
+                        updateTabCounts();
+                        // TODO: fetch('/task/' + taskId + '/status', { method: 'POST', body: JSON.stringify({ status: newStatus }) })
+                    }
+                });
+                matrixSortables.push(s);
+            });
+        }
+
         // 页面加载完成后触发
         document.addEventListener('DOMContentLoaded', () => {
             updateTabCounts();
             window.switchTab('progress');
             startDeadlineScanner();
+            initListSortable();
         });
 
     })(); // 结界闭合
