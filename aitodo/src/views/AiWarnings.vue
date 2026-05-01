@@ -249,4 +249,18 @@ onMounted(() => {
 .completed .warning-indicator {
   background: #34D399; /* 柔和绿 */
 }
+
+/* 📱 响应式 */
+@media (max-width: 768px) {
+  .warnings-page { padding: 20px 16px; }
+  .title { font-size: 1.6rem; }
+  .subtitle { font-size: 0.9rem; }
+  .warning-content { padding: 16px; }
+  
+  /* 移除 hover 效果，使用 active */
+  @media (hover: none) and (pointer: coarse) {
+    .warning-card:hover { transform: none; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02); }
+    .warning-card:active { transform: scale(0.98); background: rgba(255, 255, 255, 0.9); }
+  }
+}
 </style>

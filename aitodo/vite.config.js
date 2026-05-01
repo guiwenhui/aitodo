@@ -2,13 +2,13 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 
 export default defineConfig({
-    base: '/vue/',
+    base: '/',
     plugins: [vue()],
 
     build: {
         // 打包输出到 Spring Boot 的静态资源目录
-        outDir: '../src/main/resources/static/vue',
-        emptyOutDir: true,
+        outDir: '../src/main/resources/static',
+        emptyOutDir: false,
         rollupOptions: {
             output: {
                 entryFileNames: 'assets/index.js',

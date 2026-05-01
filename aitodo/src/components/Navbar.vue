@@ -799,17 +799,87 @@ onUnmounted(() => {
 
 /* ===== 响应式 ===== */
 @media (max-width: 768px) {
+  .minimal-nav {
+    top: auto;
+    bottom: 0;
+    border-bottom: none;
+    border-top: 1px solid #f0f0f0;
+    padding-bottom: env(safe-area-inset-bottom); /* iOS 安全区域 */
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+  }
+
   .nav-container {
-    flex-direction: column;
-    height: auto;
-    padding: 15px;
-    gap: 15px;
+    height: var(--mobile-nav-height, 65px);
+    padding: 0 10px;
+  }
+
+  .nav-brand {
+    display: none; /* 移动端隐藏 Logo */
   }
 
   .nav-links {
-    gap: 15px;
-    flex-wrap: wrap;
+    width: 100%;
+    justify-content: space-between;
+    gap: 0;
+  }
+
+  .nav-links li {
+    flex: 1;
+    display: flex;
     justify-content: center;
+  }
+
+  .nav-links a {
+    flex-direction: column;
+    gap: 4px;
+    font-size: 0.7rem;
+    padding: 8px 0;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .nav-links a i {
+    font-size: 1.2rem;
+    margin-bottom: 2px;
+  }
+
+  .nav-links a.active::after {
+    top: 0;
+    bottom: auto;
+    height: 3px;
+    border-radius: 0 0 3px 3px;
+  }
+
+  /* 登录和状态图标也调整为居中 */
+  .pf-profile-area, .stats-bell-area {
+    margin: 0;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .pf-login-link {
+    flex-direction: column;
+    font-size: 0.7rem;
+  }
+
+  .pf-login-link i {
+    font-size: 1.2rem;
+  }
+
+  /* 下拉菜单改为向上弹出 */
+  .pf-dropdown, .stats-dropdown {
+    top: auto;
+    bottom: calc(100% + 15px);
+    right: 10px;
+    width: calc(100vw - 20px);
+    max-width: 340px;
+    transform-origin: bottom center;
+  }
+
+  .dropdown-fade-enter-from,
+  .dropdown-fade-leave-to {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96); /* 依然可以使用略微下移来表现收起 */
   }
 }
 </style>

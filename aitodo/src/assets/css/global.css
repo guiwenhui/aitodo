@@ -19,6 +19,7 @@
   --shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.08);
   --radius: 12px;
   --transition: all 0.3s ease;
+  --mobile-nav-height: 65px;
 }
 
 /* ===== 2. 基础重置 ===== */
@@ -135,4 +136,40 @@ a {
     max-width: 300px;
     justify-content: center;
   }
+  
+  /* 移动端去除 hover，增加 active 态 */
+  @media (hover: none) and (pointer: coarse) {
+    .btn-primary-large:hover,
+    .btn-secondary-large:hover {
+      transform: none;
+      box-shadow: var(--shadow);
+    }
+    
+    .btn-primary-large:active {
+      transform: scale(0.98);
+      background: var(--primary-light);
+    }
+    
+    .btn-secondary-large:active {
+      transform: scale(0.98);
+      background: var(--bg-lighter);
+    }
+  }
+}
+
+/* ===== 6. 移动端触控优化 ===== */
+.touch-target {
+  position: relative;
+}
+
+.touch-target::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 44px;
+  height: 44px;
+  min-width: 100%;
+  min-height: 100%;
 }

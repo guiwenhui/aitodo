@@ -96,11 +96,6 @@
 
     </main>
 
-    <footer class="focus-footer">
-      <p v-if="currentMode === 'focus'">"不要等状态来了才开始，开始之后状态自然会来。"</p>
-      <p v-else>"休息是为了走得更远。站起来，活动一下。"</p>
-    </footer>
-
     <!-- 积分恭喜弹窗 -->
     <Transition name="toast-fade">
       <div v-if="showPointsToast" class="points-toast">
@@ -513,9 +508,34 @@ onUnmounted(() => {
 }
 
 @media (max-width: 640px) {
-  .time-display { font-size: 5rem; letter-spacing: -2px; }
-  .huge-btn { padding: 16px 32px; font-size: 1.1rem; }
-  .main-controls { flex-direction: column; }
+  .time-display { font-size: 4.5rem; letter-spacing: -2px; }
+  .huge-btn { padding: 16px 32px; font-size: 1.1rem; width: 100%; justify-content: center; }
+  .main-controls { flex-direction: column; width: 100%; }
+  .btn-abandon { width: 100%; justify-content: center; }
   .noise-options { flex-wrap: wrap; }
+  .noise-btn { flex: 1; min-width: 45%; }
+  .active-task-display .task-title { font-size: 1.2rem; }
+  .controls-section { gap: 16px; }
+  .secondary-controls { width: 100%; justify-content: space-between; }
+  
+  /* Touch target sizes */
+  .btn-icon, .noise-play-btn { width: 44px; height: 44px; }
+  .mode-btn { padding: 12px 16px; }
+
+  /* 移除 hover 效果，使用 active */
+  @media (hover: none) and (pointer: coarse) {
+    .huge-btn:hover { transform: none; box-shadow: 0 10px 25px -5px rgba(15,23,42,0.2); }
+    .huge-btn:active { transform: scale(0.98); background: #1E293B; }
+    .btn-abandon:hover { background: transparent; border-color: #FCA5A5; }
+    .btn-abandon:active { background: #FEF2F2; }
+    .btn-icon:hover { background: transparent; color: #94A3B8; }
+    .btn-icon:active { background: #F1F5F9; color: #0F172A; }
+    .noise-btn:hover { border-color: #E2E8F0; }
+    .noise-btn:active { background: #F8FAFC; }
+    .noise-play-btn:hover { transform: none; background: #4F46E5; }
+    .noise-play-btn:active { background: #4338CA; transform: scale(0.95); }
+    .points-close-btn:hover { transform: none; background: #111827; }
+    .points-close-btn:active { background: #000; transform: scale(0.98); }
+  }
 }
 </style>

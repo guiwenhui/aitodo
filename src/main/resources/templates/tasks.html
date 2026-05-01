@@ -123,7 +123,40 @@
         .ai-header { color: #D97706; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
         .ai-text { color: #92400E; font-size: 0.95rem; line-height: 1.6; }
 
-        @media (max-width: 960px) { .workspace-container { grid-template-columns: 1fr; } .task-actions { opacity: 1; } .matrix-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 960px) { 
+            .workspace-container { grid-template-columns: 1fr; padding: 0 16px; margin-top: 20px; } 
+            .task-actions { opacity: 1; } 
+            .matrix-grid { grid-template-columns: 1fr; } 
+            .sidebar { margin-top: 24px; }
+        }
+
+        @media (max-width: 768px) {
+            .page-title { font-size: 1.5rem; }
+            .header-row { flex-direction: column; gap: 12px; }
+            .view-toggle { align-self: flex-start; }
+            .folder-tabs { flex-wrap: wrap; padding: 12px 12px 0; }
+            .tab-btn { flex: 1; justify-content: center; padding: 10px 8px; font-size: 0.85rem; }
+            .task-card { padding: 16px 12px; flex-direction: column; gap: 12px; }
+            .card-right { width: 100%; justify-content: space-between; }
+            
+            /* 触控优化：增大按钮点击区域 */
+            .action-btn { width: 44px; height: 44px; font-size: 1rem; }
+            .view-toggle-btn { width: 44px; height: 44px; }
+            
+            /* 移除 hover 效果，使用 active */
+            @media (hover: none) and (pointer: coarse) {
+                .task-card:hover { background: transparent; }
+                .task-card:active { background: #F9FAFB; }
+                .action-btn.check:hover { background: var(--status-done-bg); color: var(--status-done-text); }
+                .action-btn.check:active { background: #10B981; color: white; }
+                .action-btn.focus:hover { background: #EEF2FF; color: #6366F1; }
+                .action-btn.focus:active { background: #6366F1; color: white; }
+                .action-btn.delete:hover { background: transparent; }
+                .action-btn.delete:active { background: #FEE2E2; }
+                .matrix-task-card:hover { background: #F9FAFB; transform: none; box-shadow: none; }
+                .matrix-task-card:active { background: #fff; }
+            }
+        }
 
         /* 拖拽手柄 */
         .drag-handle { color: #D1D5DB; cursor: grab; font-size: 0.9rem; margin-right: 6px; transition: color 0.2s; }

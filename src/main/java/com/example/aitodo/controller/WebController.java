@@ -12,215 +12,35 @@ import jakarta.servlet.http.HttpSession;
 
 /**
  * 前端页面控制器
- * 提供 Thymeleaf 模板页面
+ * 全面拥抱纯 Vue SPA 架构，所有前端路由均转发给 Vue 的 index.html 处理。
  */
 @Controller
 public class WebController {
 
-    private final TaskService taskService;
-
-    public WebController(TaskService taskService) {
-        this.taskService = taskService;
-    }
-
     /**
-     * 首页 - 根据登录状态重定向
+     * 捕获所有的前端页面路由并转发到 Vue 的入口 index.html
      */
-    @GetMapping("/")
-    public String index(HttpSession session, Model model) {
-        // 检查用户是否登录
-        Long userId = (Long) session.getAttribute("userId");
-        if (userId != null) {
-            model.addAttribute("loggedIn", true);
-            model.addAttribute("username", session.getAttribute("username"));
-            model.addAttribute("avatarUrl", session.getAttribute("avatarUrl"));
-            // 已登录，显示 vue-home
-            return "vue-home";
-        } else {
-            // 未登录，显示首页（宣传页面）
-            model.addAttribute("appName", "AI Todo");
-            model.addAttribute("version", "1.0.0");
-            return "index";
-        }
+    @GetMapping({
+            "/",
+            "/tasks",
+            "/users",
+            "/ai-warnings",
+            "/vue-home",
+            "/leaderboard",
+            "/health",
+            "/login",
+            "/register",
+            "/focus-flow"
+    })
+    public String forwardToVue() {
+        return "forward:/index.html";
     }
 
     /**
-     * 任务管理页面
-     */
-    @GetMapping("/tasks")
-    public String tasks(Model model, HttpSession session) {
-        // 检查用户是否登录
-        Long userId = (Long) session.getAttribute("userId");
-        String username = (String) session.getAttribute("username");
-        if (userId == null) {
-            // 未登录，重定向到登录页面
-            return "redirect:/login";
-        }
-
-        model.addAttribute("pageTitle", "任务管理 - AI Todo");
-        // 获取当前登录用户的任务列表
-        var tasks = taskService.getTasksByUserId(userId);
-        model.addAttribute("tasks", tasks);
-        model.addAttribute("aiWarning", "⏰ 你有1个紧急任务需要立即处理！拖延只会让问题变大，现在就开始行动吧！");
-        model.addAttribute("loggedIn", true);
-        model.addAttribute("username", username);
-        model.addAttribute("avatarUrl", session.getAttribute("avatarUrl"));
-        return "tasks";
-    }
-
-    /**
-     * 用户管理页面
-     */
-    @GetMapping("/users")
-    public String users(Model model) {
-        model.addAttribute("pageTitle", "用户管理 - AI Todo");
-        return "users";
-    }
-
-    /**
-     * AI 提醒页面
-     */
-    @GetMapping("/ai-warnings")
-    public String aiWarnings(Model model, HttpSession session) {
-        // 检查用户是否登录
-        Long userId = (Long) session.getAttribute("userId");
-        String username = (String) session.getAttribute("username");
-        if (userId == null) {
-            // 未登录，重定向到登录页面
-            return "redirect:/login";
-        }
-
-        model.addAttribute("pageTitle", "AI warning");
-        model.addAttribute("loggedIn", true);
-        model.addAttribute("username", username);
-        model.addAttribute("avatarUrl", session.getAttribute("avatarUrl"));
-        return "ai-warnings";
-    }
-
-    /**
-     * Vue.js 简约首页
-     */
-    @GetMapping("/vue-home")
-    public String vueHome() {
-        return "vue-home";
-    }
-
-    /**
-     * 积分排行榜 / 数据大屏 (Vue项目入口)
-     */
-    @GetMapping("/leaderboard")
-    public String leaderboard(HttpSession session , Model model) {
-        Long userId = (Long) session.getAttribute("userId");
-        if (userId == null) {
-            return "redirect:/login";
-        }
-        // 🌟 补充导航栏需要的用户信息
-        model.addAttribute("loggedIn", true);
-        model.addAttribute("username", session.getAttribute("username"));
-        model.addAttribute("avatarUrl", session.getAttribute("avatarUrl"));
-
-        // 🌟 直接返回模板名称，让 Spring Boot 去 templates 文件夹下找
-        return "leaderboard";
-    }
-    /**
-     * 健康检查页面
-     */
-    @GetMapping("/health")
-    public String healthPage(HttpSession session, Model model) {
-        // 1. 从 session 中获取登录信息
-        Long userId = (Long) session.getAttribute("userId");
-        String username = (String) session.getAttribute("username");
-        if (userId != null) {
-            // 已登录
-            model.addAttribute("loggedIn", true);
-            model.addAttribute("username", username);
-            model.addAttribute("avatarUrl", session.getAttribute("avatarUrl"));
-        } else {
-            // 未登录
-            model.addAttribute("loggedIn", false);
-        }
-        model.addAttribute("appName", "AI Todo");
-        model.addAttribute("version", "1.0.0");
-        return "health";
-    }
-
-    /**
-     * 登录页面
-     */
-    @GetMapping("/login")
-    public String loginPage(Model model, HttpSession session) {
-        // 如果用户已登录，重定向到任务页面
-        Long userId = (Long) session.getAttribute("userId");
-        if (userId != null) {
-            return "redirect:/tasks";
-        }
-
-        model.addAttribute("appName", "AI Todo");
-        model.addAttribute("version", "1.0.0");
-        return "login";
-    }
-
-    /**
-     * 注册页面
-     */
-    @GetMapping("/register")
-    public String registerPage(Model model, HttpSession session) {
-        // 如果用户已登录，重定向到任务页面
-        Long userId = (Long) session.getAttribute("userId");
-        if (userId != null) {
-            return "redirect:/tasks";
-        }
-
-        model.addAttribute("appName", "AI Todo");
-        model.addAttribute("version", "1.0.0");
-        return "register";
-    }
-
-    /**
-     * 用户退出登录
-     */
-    @GetMapping("/logout")
-    public String logout(HttpSession session) {
-        session.invalidate();
-        return "redirect:/";
-    }
-    /**
-     * 心流舱页面 (Vue项目入口)
-     */
-    @GetMapping("/focus-flow")
-    public String focusFlow(Model model, HttpSession session) {
-        // 1. 检查用户是否登录
-        Long userId = (Long) session.getAttribute("userId");
-        String username = (String) session.getAttribute("username");
-
-        if (userId == null) {
-            // 未登录，重定向到登录页面
-            return "redirect:/login";
-        }
-
-        // 2. 传递公共导航栏必须的参数，防止 Thymeleaf 报错
-        model.addAttribute("pageTitle", "心流舱 - AI Todo");
-        model.addAttribute("loggedIn", true);
-        model.addAttribute("username", username);
-        model.addAttribute("avatarUrl", session.getAttribute("avatarUrl"));
-
-        // 3. 返回你创建的 focus-flow.html 模板
-        return "focus-flow";
-    }
-
-    /**
-     * 🔧 Vue SPA Catch-All 路由
-     * 
-     * 当用户直接访问 /vue/leaderboard、/vue/tasks 等 Vue Router 管理的路径时，
-     * Spring Boot 不会找到对应的静态文件，会返回 404。
-     * 此 catch-all 将所有 /vue 子路径（排除带 . 的真实静态资源如 .js .css）
-     * 转发到 SPA 的 index.html，让 Vue Router 在客户端处理路由。
-     * 
-     * 注意：只匹配单层路径（如 /vue/tasks），不匹配深层路径（如 /vue/assets/index.js），
-     * 避免拦截静态资源请求。
+     * 捕获带参数或深层的特定前端路由 (原为 /vue/* 的 Catch-All)
      */
     @GetMapping("/vue/{path:[^\\.]*}")
     public String vueSpaForward() {
-        return "forward:/vue/index.html";
+        return "redirect:/"; // 旧的 /vue/ 路由重定向到根目录
     }
 }

@@ -127,6 +127,12 @@ onUnmounted(() => {
   align-items: center;
 }
 
+@media (max-width: 768px) {
+  .ai-agent-wrapper {
+    bottom: calc(var(--mobile-nav-height, 65px) + 15px);
+  }
+}
+
 /* ---------- 毛玻璃输入框核心 ---------- */
 .ai-glass-input-container {
   position: relative;

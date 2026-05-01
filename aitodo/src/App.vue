@@ -27,4 +27,10 @@ const showNav = computed(() => route.meta.hideNav !== true)
 main.has-nav {
   padding-top: 60px;
 }
+
+@media (max-width: 768px) {
+  main.has-nav {
+    padding-top: 0;
+  }
+}
 </style>

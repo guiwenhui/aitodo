@@ -372,8 +372,41 @@ onUnmounted(() => { if (scanner) clearInterval(scanner) })
 .matrix-task-meta { font-size: 0.75rem; color: #9CA3AF; }
 
 @media (max-width: 960px) {
-  .workspace-container { grid-template-columns: 1fr; }
+  .workspace-container { grid-template-columns: 1fr; padding: 0 16px; margin-top: 20px;}
   .task-actions { opacity: 1; }
   .matrix-grid { grid-template-columns: 1fr; }
+  
+  /* Sidebar moves to bottom, we can adjust its padding/margin */
+  .sidebar { margin-top: 24px; }
+}
+
+@media (max-width: 768px) {
+  .page-title { font-size: 1.5rem; }
+  .header-row { flex-direction: column; gap: 12px; }
+  .view-toggle { align-self: flex-start; }
+  
+  .folder-tabs { flex-wrap: wrap; padding: 12px 12px 0; }
+  .tab-btn { flex: 1; justify-content: center; padding: 10px 8px; font-size: 0.85rem; }
+  
+  .task-card { padding: 16px 12px; flex-direction: column; gap: 12px; }
+  .card-right { width: 100%; justify-content: space-between; }
+  
+  /* 触控优化：增大按钮点击区域 */
+  .action-btn { width: 44px; height: 44px; font-size: 1rem; }
+  .view-toggle-btn { width: 44px; height: 44px; }
+  
+  /* 移除 hover 效果，使用 active */
+  @media (hover: none) and (pointer: coarse) {
+    .task-card:hover { background: transparent; }
+    .task-card:active { background: #F9FAFB; }
+    .action-btn.check:hover { background: #D1FAE5; color: #059669; }
+    .action-btn.check:active { background: #10B981; color: white; }
+    .action-btn.focus:hover { background: #EEF2FF; color: #6366F1; }
+    .action-btn.focus:active { background: #6366F1; color: white; }
+    .action-btn.delete:hover { background: transparent; }
+    .action-btn.delete:active { background: #FEE2E2; }
+    .matrix-task-card:hover { background: #F9FAFB; transform: none; box-shadow: none; }
+    .matrix-task-card:active { background: #fff; }
+  }
 }
 </style>

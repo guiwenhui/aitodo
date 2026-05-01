@@ -372,8 +372,35 @@ async function syncOrderToBackend(orderedTasks) {
 .list-enter-from { opacity: 0; transform: translateY(15px); }
 .list-leave-to { opacity: 0; transform: translateX(-30px); }
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .matrix-grid { grid-template-columns: 1fr; }
   .header-top { flex-direction: column; gap: 12px; }
+  .title { font-size: 1.5rem; }
+  
+  .folder-tabs { flex-wrap: wrap; }
+  .tab-btn { flex: 1; justify-content: center; padding: 10px; }
+  
+  .task-card { padding: 16px 12px; flex-direction: column; gap: 12px; }
+  .card-right { width: 100%; justify-content: space-between; }
+  
+  .hover-actions { opacity: 1; position: relative; right: 0; background: transparent; padding-left: 0; }
+  
+  /* Touch target sizes */
+  .action-btn { width: 44px; height: 44px; }
+  .view-btn { width: 44px; height: 44px; }
+  
+  /* 移除 hover 效果，使用 active */
+  @media (hover: none) and (pointer: coarse) {
+    .task-card:hover { transform: none; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border-color: #F3F4F6; }
+    .task-card:active { background: #F9FAFB; }
+    .drag-handle:hover { color: #D1D5DB; }
+    .drag-handle:active { color: #9CA3AF; }
+    .action-btn.check:hover { background: #D1FAE5; color: #059669; }
+    .action-btn.check:active { background: #10B981; color: white; }
+    .action-btn.delete:hover { background: transparent; color: #DC2626; }
+    .action-btn.delete:active { background: #FEE2E2; }
+    .matrix-task-card:hover { transform: none; box-shadow: none; }
+    .matrix-task-card:active { background: #fff; }
+  }
 }
 </style>
