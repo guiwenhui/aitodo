@@ -7,6 +7,12 @@ import { createRouter, createWebHistory } from 'vue-router'
 const routes = [
   {
     path: '/',
+    name: 'Landing',
+    component: () => import('../views/LandingPage.vue'),
+    meta: { title: 'AI Todo - 告别拖延，重塑生产力', hideNav: true }
+  },
+  {
+    path: '/home',
     name: 'Home',
     component: () => import('../views/Home.vue'),
     meta: { title: 'AI Todo - 简约高效的任务管理' }
