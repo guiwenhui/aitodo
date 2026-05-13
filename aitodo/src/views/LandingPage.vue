@@ -22,7 +22,7 @@
         <!-- Right Buttons -->
         <div class="nav-actions">
           <router-link to="/login" class="nav-btn-login" id="landing-login-btn">登录</router-link>
-          <router-link to="/register" class="nav-btn-cta" id="landing-cta-btn">
+          <router-link to="/login" class="nav-btn-cta" id="landing-cta-btn">
             <Zap :size="16" />
             免费开始
           </router-link>
@@ -44,7 +44,7 @@
           <a href="#faq" @click.prevent="scrollToSection('faq'); mobileMenuOpen = false">常见问题</a>
           <div class="mobile-menu-actions">
             <router-link to="/login" class="nav-btn-login">登录</router-link>
-            <router-link to="/register" class="nav-btn-cta"><Zap :size="16" />免费开始</router-link>
+            <router-link to="/login" class="nav-btn-cta"><Zap :size="16" />免费开始</router-link>
           </div>
         </div>
       </transition>
@@ -61,93 +61,104 @@
       </div>
 
       <div class="hero-container">
-        <div class="hero-badge" v-observe-visibility>
-          <Sparkles :size="14" />
-          <span>AI 驱动的下一代效率工具</span>
-        </div>
-        <h1 class="hero-title" v-observe-visibility>
-          告别拖延，用 AI<br/>
-          <span class="gradient-text">重塑你的生产力</span>
-        </h1>
-        <p class="hero-subtitle" v-observe-visibility>
-          不仅仅是待办清单。AITodo 结合 AI Agent 与游戏化机制，通过自然语言对话管理任务、<br class="hide-mobile" />
-          沉浸式心流体验与多维数据追踪，彻底治愈你的拖延症。
-        </p>
-        <div class="hero-buttons" v-observe-visibility>
-          <router-link to="/register" class="btn-hero-primary" id="hero-primary-btn">
-            <Rocket :size="18" />
-            立即开启高效人生
-            <div class="btn-shine"></div>
-          </router-link>
-          <a href="#features" @click.prevent="scrollToSection('features')" class="btn-hero-secondary" id="hero-secondary-btn">
-            <Play :size="16" />
-            了解工作原理
-          </a>
+        <div class="hero-content-left">
+          <div class="hero-badge" v-observe-visibility>
+            <Sparkles :size="14" />
+            <span>AI 驱动的下一代效率工具</span>
+          </div>
+          <h1 class="hero-title" v-observe-visibility>
+            告别拖延，用 AI<br/>
+            <span class="highlight-text">重塑你的生产力</span>
+          </h1>
+          <p class="hero-subtitle" v-observe-visibility>
+            不仅仅是待办清单。AITodo 结合 AI Agent 与游戏化机制，通过自然语言对话管理任务、<br class="hide-mobile" />
+            沉浸式心流体验与多维数据追踪，彻底治愈你的拖延症。
+          </p>
+          <div class="hero-buttons" v-observe-visibility>
+            <router-link to="/login" class="btn-hero-primary" id="hero-primary-btn">
+              立即开启体验 >|
+            </router-link>
+            <a href="#features" @click.prevent="scrollToSection('features')" class="btn-hero-secondary" id="hero-secondary-btn">
+              了解工作原理 <span class="green-dot"></span>
+            </a>
+          </div>
+          
+          <div class="hero-trusted" v-observe-visibility>
+            <span class="trusted-label">Trusted by:</span>
+            <div class="trusted-logos">
+              <span class="t-logo">Google</span>
+              <span class="t-logo">Notion</span>
+              <span class="t-logo">Shopify</span>
+              <span class="t-logo">HubSpot</span>
+            </div>
+          </div>
         </div>
 
-        <!-- Dashboard Mockup -->
-        <div class="hero-mockup" v-observe-visibility>
-          <div class="mockup-window">
-            <div class="mockup-toolbar">
-              <div class="mockup-dots">
-                <span class="dot red"></span>
-                <span class="dot yellow"></span>
-                <span class="dot green"></span>
-              </div>
-              <div class="mockup-url">
-                <Lock :size="12" />
-                <span>app.aitodo.com/dashboard</span>
-              </div>
-              <div class="mockup-dots" style="visibility:hidden">
-                <span class="dot"></span>
-              </div>
-            </div>
-            <div class="mockup-body">
-              <!-- Sidebar -->
-              <div class="mock-sidebar">
-                <div class="mock-logo-row"><div class="mock-avatar"></div><div class="mock-line w60"></div></div>
-                <div class="mock-nav-item active"><ListTodo :size="14" /><span>任务</span></div>
-                <div class="mock-nav-item"><BarChart3 :size="14" /><span>统计</span></div>
-                <div class="mock-nav-item"><Timer :size="14" /><span>心流</span></div>
-                <div class="mock-nav-item"><Trophy :size="14" /><span>排行</span></div>
-              </div>
-              <!-- Main content -->
-              <div class="mock-main">
-                <div class="mock-header-row">
-                  <div class="mock-line w40 bold"></div>
-                  <div class="mock-badge-row">
-                    <div class="mock-stat-badge"><span class="badge-num">12</span><span class="badge-label">待办</span></div>
-                    <div class="mock-stat-badge done"><span class="badge-num">48</span><span class="badge-label">已完成</span></div>
-                    <div class="mock-stat-badge streak"><span class="badge-num">7🔥</span><span class="badge-label">连续天</span></div>
-                  </div>
+        <div class="hero-content-right">
+          <!-- Dashboard Mockup -->
+          <div class="hero-mockup" v-observe-visibility>
+            <div class="mockup-window">
+              <div class="mockup-toolbar">
+                <div class="mockup-dots">
+                  <span class="dot red"></span>
+                  <span class="dot yellow"></span>
+                  <span class="dot green"></span>
                 </div>
-                <div class="mock-tasks">
-                  <div class="mock-task" v-for="(t, i) in mockTasks" :key="i">
-                    <div class="mock-check" :class="{ checked: t.done }">
-                      <Check v-if="t.done" :size="10" />
-                    </div>
-                    <div class="mock-task-text">
-                      <div class="mock-line" :class="{ 'line-through': t.done }" style="width: 100%">{{ t.text }}</div>
-                    </div>
-                    <div class="mock-priority" :class="t.priority">{{ t.tag }}</div>
-                  </div>
+                <div class="mockup-url">
+                  <Lock :size="12" />
+                  <span>app.aitodo.com/dashboard</span>
                 </div>
-                <!-- Mini chart area -->
-                <div class="mock-chart-row">
-                  <div class="mock-chart">
-                    <div class="chart-title">本周完成趋势</div>
-                    <div class="mini-bars">
-                      <div class="bar" v-for="(h, i) in [40,65,50,80,70,90,60]" :key="i" :style="{ height: h + '%' }"></div>
+                <div class="mockup-dots" style="visibility:hidden">
+                  <span class="dot"></span>
+                </div>
+              </div>
+              <div class="mockup-body">
+                <!-- Sidebar -->
+                <div class="mock-sidebar">
+                  <div class="mock-logo-row"><div class="mock-avatar"></div><div class="mock-line w60"></div></div>
+                  <div class="mock-nav-item active"><ListTodo :size="14" /><span>任务</span></div>
+                  <div class="mock-nav-item"><BarChart3 :size="14" /><span>统计</span></div>
+                  <div class="mock-nav-item"><Timer :size="14" /><span>心流</span></div>
+                  <div class="mock-nav-item"><Trophy :size="14" /><span>排行</span></div>
+                </div>
+                <!-- Main content -->
+                <div class="mock-main">
+                  <div class="mock-header-row">
+                    <div class="mock-line w40 bold"></div>
+                    <div class="mock-badge-row">
+                      <div class="mock-stat-badge"><span class="badge-num">12</span><span class="badge-label">待办</span></div>
+                      <div class="mock-stat-badge done"><span class="badge-num">48</span><span class="badge-label">已完成</span></div>
+                      <div class="mock-stat-badge streak"><span class="badge-num">7🔥</span><span class="badge-label">连续天</span></div>
                     </div>
                   </div>
-                  <div class="mock-chart">
-                    <div class="chart-title">时间分布</div>
-                    <div class="mini-pie">
-                      <div class="pie-circle"></div>
-                      <div class="pie-legend">
-                        <div class="pie-item"><span class="pie-dot c1"></span>工作 45%</div>
-                        <div class="pie-item"><span class="pie-dot c2"></span>学习 30%</div>
-                        <div class="pie-item"><span class="pie-dot c3"></span>生活 25%</div>
+                  <div class="mock-tasks">
+                    <div class="mock-task" v-for="(t, i) in mockTasks" :key="i">
+                      <div class="mock-check" :class="{ checked: t.done }">
+                        <Check v-if="t.done" :size="10" />
+                      </div>
+                      <div class="mock-task-text">
+                        <div class="mock-line" :class="{ 'line-through': t.done }" style="width: 100%">{{ t.text }}</div>
+                      </div>
+                      <div class="mock-priority" :class="t.priority">{{ t.tag }}</div>
+                    </div>
+                  </div>
+                  <!-- Mini chart area -->
+                  <div class="mock-chart-row">
+                    <div class="mock-chart">
+                      <div class="chart-title">本周完成趋势</div>
+                      <div class="mini-bars">
+                        <div class="bar" v-for="(h, i) in [40,65,50,80,70,90,60]" :key="i" :style="{ height: h + '%' }"></div>
+                      </div>
+                    </div>
+                    <div class="mock-chart">
+                      <div class="chart-title">时间分布</div>
+                      <div class="mini-pie">
+                        <div class="pie-circle"></div>
+                        <div class="pie-legend">
+                          <div class="pie-item"><span class="pie-dot c1"></span>工作 45%</div>
+                          <div class="pie-item"><span class="pie-dot c2"></span>学习 30%</div>
+                          <div class="pie-item"><span class="pie-dot c3"></span>生活 25%</div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -304,7 +315,7 @@
       <div class="section-container cta-inner">
         <h2>准备好找回被浪费的时间了吗？</h2>
         <p>加入数千名已经告别拖延的用户，开启你的高效人生。</p>
-        <router-link to="/register" class="btn-hero-primary" id="bottom-cta-btn">
+        <router-link to="/login" class="btn-hero-primary" id="bottom-cta-btn">
           <Rocket :size="18" />
           立即免费开始
           <div class="btn-shine"></div>
@@ -445,7 +456,7 @@ onMounted(() => window.addEventListener('scroll', handleScroll))
 onUnmounted(() => window.removeEventListener('scroll', handleScroll))
 </script>
 
-<style>
+<style scoped>
 @import '../assets/css/landing.css';
 @import '../assets/css/landing-sections.css';
 </style>

@@ -82,7 +82,10 @@ const handleLogin = async () => {
       errorMsg.value = '登录成功!'; errorType.value = 'success'
       localStorage.setItem('userId', res.data.data.userId)
       localStorage.setItem('username', res.data.data.username)
-      setTimeout(() => router.push('/'), 1000)
+      if (res.data.data.avatarUrl) {
+        localStorage.setItem('avatarUrl', res.data.data.avatarUrl)
+      }
+      setTimeout(() => router.push('/tasks'), 1000)
     } else {
       errorMsg.value = res.data?.msg || '用户名或密码无效'; errorType.value = 'error'
     }
