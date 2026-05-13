@@ -1,36 +1,36 @@
 <template>
-  <component :is="currentComponent" />
+  <div id="app-root">
+    <Navbar v-if="showNav" />
+    <main :class="{ 'has-nav': showNav }">
+      <router-view />
+    </main>
+    <AiAgent v-if="showNav" />
+  </div>
 </template>
 
 <script setup>
-import { shallowRef, onMounted } from 'vue'
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
+import Navbar from './components/Navbar.vue'
+import AiAgent from './components/AiAgent.vue'
+import { useShortcuts } from './composables/useShortcuts.js'
 
-// 1. 引入对应的页面组件
-import Leaderboard from './components/Leaderboard.vue' // 🌟 引入排行榜组件
-import AiWarnings from './views/AiWarnings.vue'
-import FocusFlow from './views/FocusFlow.vue'
-import Dashboard from './views/Dashboard.vue'
+// 全局快捷键
+useShortcuts()
 
-const currentComponent = shallowRef(null)
-
-onMounted(() => {
-  const path = window.location.pathname
-
-  // 2. 修正路由指向：让 /leaderboard 路径直接对应 Leaderboard.vue
-  if (path.includes('/leaderboard')) {
-    currentComponent.value = Leaderboard // 🌟 关键修改：直接挂载排行榜
-  }
-  else if (path.includes('/ai-warnings')) {
-    currentComponent.value = AiWarnings
-  }
-  else if (path.includes('/focus-flow')) {
-    currentComponent.value = FocusFlow
-  }
-  else if (path.includes('/dashboard')) { // 如果有仪表盘需求可以单独给路径
-    currentComponent.value = Dashboard
-  }
-  else {
-    currentComponent.value = null
-  }
-})
+const route = useRoute()
+const showNav = computed(() => route.meta.hideNav !== true)
 </script>
+
+<style>
+/* 给有导航栏的页面留出顶部空间 */
+main.has-nav {
+  padding-top: 60px;
+}
+
+@media (max-width: 768px) {
+  main.has-nav {
+    padding-top: 0;
+  }
+}
+</style>

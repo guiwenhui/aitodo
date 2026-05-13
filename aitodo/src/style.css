@@ -15,3 +15,11 @@ body {
   padding-top: 80px; /* 导航栏的高度，防止 Vue 的顶部组件被导航栏遮挡 */
   min-height: 100vh;
 }
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  #app {
+    padding-top: 0;
+    padding-bottom: var(--mobile-nav-height, 65px);
+  }
+}

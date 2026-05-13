@@ -284,7 +284,31 @@ onMounted(() => { fetchLeaderboard() })
 /* 响应式调整 */
 @media (max-width: 768px) {
   .leaderboard-container { padding: 20px; }
-  .podium-wrapper { gap: 12px; }
+  .podium-wrapper { gap: 12px; align-items: flex-end; margin-bottom: 40px; }
   .podium-card { width: 30%; padding: 20px 8px 16px; }
+  .rank-1 .avatar { width: 56px; height: 56px; }
+  .avatar { width: 48px; height: 48px; }
+  .user-info .name { font-size: 0.85rem; }
+  .rank-number { font-size: 1rem; top: -12px; padding: 0 8px; }
+  
+  .col-level { display: none; } /* 在小屏幕隐藏等级列 */
+  .minimal-table td, .minimal-table th { padding: 12px 8px; }
+  
+  /* 移除 hover 效果，使用 active */
+  @media (hover: none) and (pointer: coarse) {
+    .podium-card:hover { transform: translateY(-4px); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02); border-color: #e5e7eb; }
+    .rank-1:hover { transform: translateY(-12px); box-shadow: 0 12px 20px -5px rgba(99, 102, 241, 0.1); }
+    .podium-card:active { transform: scale(0.98); }
+    .table-row:hover td { transform: none; box-shadow: none; }
+    .table-row:active td { background: #f9fafb; }
+  }
+}
+
+@media (max-width: 480px) {
+  .podium-wrapper { flex-direction: column; align-items: center; gap: 40px; }
+  .podium-card { width: 100%; max-width: 200px; }
+  .rank-1 { order: -1; margin-bottom: 0; }
+  .rank-1 .avatar { width: 76px; height: 76px; }
+  .avatar { width: 64px; height: 64px; }
 }
 </style>

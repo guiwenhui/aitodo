@@ -142,4 +142,15 @@ defineExpose({ fetchData })
   color: #1e293b;
   line-height: 1.2;
 }
+
+/* 📱 响应式 */
+@media (max-width: 480px) {
+  .user-stats-card {
+    padding: 0.5rem 1rem;
+    gap: 1rem;
+  }
+  .stat-icon { width: 32px; height: 32px; font-size: 0.9rem; }
+  .label { font-size: 0.7rem; }
+  .value { font-size: 1rem; }
+}
 </style>

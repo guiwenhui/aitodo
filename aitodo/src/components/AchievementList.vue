@@ -82,7 +82,26 @@ defineExpose({
 })
 </script>
 
-<!-- 不生成 CSS 样式，由用户根据需要自行添加 -->
 <style scoped>
-/* 样式由用户自行实现 */
+.achievement-list { padding: 20px 0; }
+.achievements { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; }
+.achievement-item { display: flex; align-items: center; gap: 16px; padding: 16px; background: #fff; border-radius: 12px; border: 1px solid #E5E7EB; box-shadow: 0 1px 2px rgba(0,0,0,0.05); transition: transform 0.2s; }
+.achievement-icon { width: 56px; height: 56px; display: flex; justify-content: center; align-items: center; background: #F3F4F6; border-radius: 12px; font-size: 1.5rem; flex-shrink: 0; overflow: hidden; }
+.achievement-icon img { width: 100%; height: 100%; object-fit: cover; }
+.achievement-name { font-weight: 600; font-size: 1rem; color: #111827; margin-bottom: 4px; }
+.achievement-description { font-size: 0.85rem; color: #6B7280; line-height: 1.4; }
+
+.loading, .error, .empty { text-align: center; padding: 40px; color: #6B7280; font-size: 0.95rem; }
+.error { color: #EF4444; }
+
+/* 📱 响应式 */
+@media (max-width: 768px) {
+  .achievements { grid-template-columns: 1fr; }
+  .achievement-item { padding: 12px; }
+  .achievement-icon { width: 48px; height: 48px; font-size: 1.2rem; }
+  
+  @media (hover: none) and (pointer: coarse) {
+    .achievement-item:active { transform: scale(0.98); background: #F9FAFB; }
+  }
+}
 </style>
