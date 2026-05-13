@@ -21,11 +21,23 @@
 
         <!-- Right Buttons -->
         <div class="nav-actions">
-          <router-link to="/login" class="nav-btn-login" id="landing-login-btn">登录</router-link>
-          <router-link to="/login" class="nav-btn-cta" id="landing-cta-btn">
-            <Zap :size="16" />
-            免费开始
-          </router-link>
+          <template v-if="isLoggedIn">
+            <router-link to="/tasks" class="nav-btn-cta" id="landing-cta-btn">
+              <Zap :size="16" />
+              进入工作台
+            </router-link>
+            <div class="landing-user-avatar" @click="$router.push('/tasks')">
+              <img :src="avatarUrl" :alt="username" />
+              <span class="landing-user-name">{{ username }}</span>
+            </div>
+          </template>
+          <template v-else>
+            <router-link to="/login" class="nav-btn-login" id="landing-login-btn">登录</router-link>
+            <router-link to="/login" class="nav-btn-cta" id="landing-cta-btn">
+              <Zap :size="16" />
+              免费开始
+            </router-link>
+          </template>
         </div>
 
         <!-- Mobile Hamburger -->
@@ -43,8 +55,13 @@
           <a href="#leaderboard" @click.prevent="scrollToSection('leaderboard'); mobileMenuOpen = false">排行榜</a>
           <a href="#faq" @click.prevent="scrollToSection('faq'); mobileMenuOpen = false">常见问题</a>
           <div class="mobile-menu-actions">
-            <router-link to="/login" class="nav-btn-login">登录</router-link>
-            <router-link to="/login" class="nav-btn-cta"><Zap :size="16" />免费开始</router-link>
+            <template v-if="isLoggedIn">
+              <router-link to="/tasks" class="nav-btn-cta" style="flex:1;justify-content:center"><Zap :size="16" />进入工作台</router-link>
+            </template>
+            <template v-else>
+              <router-link to="/login" class="nav-btn-login">登录</router-link>
+              <router-link to="/login" class="nav-btn-cta"><Zap :size="16" />免费开始</router-link>
+            </template>
           </div>
         </div>
       </transition>
@@ -359,6 +376,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, reactive } from 'vue'
+import axios from 'axios'
 import {
   Sparkles, Zap, Menu, X, Rocket, Play, Lock, Check, Layers,
   Timer, Trophy, Flame, HelpCircle, ChevronDown, BarChart3,
@@ -452,11 +470,70 @@ const faqs = reactive([
 
 const toggleFaq = (i) => { faqs[i].open = !faqs[i].open }
 
-onMounted(() => window.addEventListener('scroll', handleScroll))
+/* ===== 用户登录状态（复用 Navbar 的逻辑） ===== */
+const isLoggedIn = ref(false)
+const username = ref('User')
+const avatarUrl = ref('')
+
+const getDefaultAvatar = (name) => {
+  const seed = encodeURIComponent(name || 'User')
+  return `https://api.dicebear.com/7.x/notionists/svg?seed=${seed}&backgroundColor=transparent`
+}
+
+const checkLoginStatus = async () => {
+  try {
+    const res = await axios.get('/stats/user')
+    if (res.data && res.data.code === 200 && res.data.data) {
+      isLoggedIn.value = true
+      username.value = localStorage.getItem('username') || 'User'
+      const storedAvatar = localStorage.getItem('avatarUrl')
+      avatarUrl.value = storedAvatar || getDefaultAvatar(username.value)
+    }
+  } catch {
+    isLoggedIn.value = false
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('scroll', handleScroll)
+  checkLoginStatus()
+})
 onUnmounted(() => window.removeEventListener('scroll', handleScroll))
 </script>
 
 <style scoped>
 @import '../assets/css/landing.css';
 @import '../assets/css/landing-sections.css';
+
+/* ===== 已登录用户头像（Landing Navbar） ===== */
+.landing-user-avatar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  padding: 4px 12px 4px 4px;
+  border-radius: 100px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(0, 0, 0, 0.02);
+  transition: all 0.25s;
+}
+.landing-user-avatar:hover {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.15);
+}
+.landing-user-avatar img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.landing-user-name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1a1a1a;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 </style>
